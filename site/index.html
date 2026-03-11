@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Spartacus Artes Marciais — Brasnorte-MT</title>
   <meta name="description" content="Transformando vidas através das artes marciais. Jiu-Jitsu, Muay Thai, MMA, Capoeira em Brasnorte-MT desde 2022." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -33,43 +36,48 @@
     a { color: var(--gold); text-decoration: none; }
     a:hover { text-decoration: underline; color: var(--gold-dim); }
 
-    /* ── HEADER ──────────────────────────────────────────── */
+    /* ── NAV (fixed + blur) ──────────────────────────────── */
     header {
-      background: var(--bg-secondary);
-      border-bottom: 1px solid var(--border);
-      padding: 1.25rem 1.5rem;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(11,13,18,0.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(198,163,78,0.12);
+      padding: 1rem 1.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
     }
 
     .logo { display: flex; flex-direction: column; }
 
     .logo-mark {
-      font-size: 1.4rem;
-      font-weight: 800;
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
       color: var(--gold);
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       line-height: 1;
     }
 
     .logo-sub {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
     }
 
-    nav { display: flex; gap: 1.5rem; align-items: center; }
+    nav { display: flex; gap: 1.75rem; align-items: center; }
 
     nav a {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 500;
       color: var(--text-muted);
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
       text-decoration: none;
       transition: color 0.15s;
     }
@@ -83,65 +91,95 @@
       background: var(--gold);
       color: #0B0D12;
       font-weight: 700;
-      font-size: 0.9rem;
+      font-size: 0.82rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
       text-decoration: none;
       padding: 0.6rem 1.25rem;
-      border-radius: 6px;
-      transition: background 0.15s;
+      border-radius: 4px;
+      transition: background 0.15s, transform 0.15s;
     }
 
-    .btn:hover { background: var(--gold-dim); text-decoration: none; color: #0B0D12; }
+    .btn:hover { background: var(--gold-dim); text-decoration: none; color: #0B0D12; transform: translateY(-1px); }
 
     @media (max-width: 640px) {
       nav { display: none; }
     }
 
-    /* ── HERO ────────────────────────────────────────────── */
+    /* ── HERO (full-screen + imagem de fundo) ────────────── */
     .hero {
-      background: var(--bg-secondary);
-      border-bottom: 1px solid var(--border);
-      padding: 5rem 1.5rem 4rem;
-      text-align: center;
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      background: url('/images/jiu-jitsu.jpg') center/cover no-repeat;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        135deg,
+        rgba(11,13,18,0.95) 0%,
+        rgba(11,13,18,0.75) 55%,
+        rgba(198,163,78,0.08) 100%
+      );
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      padding: 7rem 1.5rem 5rem;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
     }
 
     .hero-eyebrow {
-      display: inline-block;
-      font-size: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.78rem;
       font-weight: 600;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
       color: var(--gold);
-      border: 1px solid rgba(198,163,78,0.3);
-      background: rgba(198,163,78,0.06);
-      padding: 0.3rem 0.9rem;
-      border-radius: 20px;
       margin-bottom: 1.5rem;
     }
 
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 2px;
+      background: var(--gold);
+      flex-shrink: 0;
+    }
+
     .hero h1 {
-      font-size: clamp(2rem, 5vw, 3.2rem);
-      font-weight: 800;
-      line-height: 1.15;
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-weight: 700;
+      line-height: 1.0;
       color: var(--text-primary);
-      max-width: 700px;
-      margin: 0 auto 1.25rem;
-      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      margin-bottom: 1.5rem;
     }
 
     .hero h1 span { color: var(--gold); }
 
     .hero p {
-      font-size: 1.05rem;
+      font-size: clamp(1rem, 2.2vw, 1.15rem);
       color: var(--text-muted);
-      max-width: 520px;
-      margin: 0 auto 2.5rem;
+      max-width: 540px;
+      margin-bottom: 2.5rem;
       line-height: 1.75;
     }
 
     .hero-actions {
       display: flex;
       gap: 1rem;
-      justify-content: center;
       flex-wrap: wrap;
     }
 
@@ -151,38 +189,40 @@
       background: transparent;
       color: var(--text-primary);
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.82rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
       text-decoration: none;
       padding: 0.6rem 1.25rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      transition: border-color 0.15s;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.22);
+      transition: border-color 0.15s, transform 0.15s;
     }
 
-    .btn-outline:hover { border-color: var(--gold); color: var(--gold); text-decoration: none; }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); text-decoration: none; transform: translateY(-1px); }
 
     .hero-stats {
       display: flex;
-      justify-content: center;
       gap: 3rem;
-      margin-top: 3.5rem;
+      margin-top: 4rem;
       padding-top: 2.5rem;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid rgba(255,255,255,0.08);
       flex-wrap: wrap;
     }
 
     .stat-num {
-      font-size: 1.75rem;
-      font-weight: 800;
+      font-family: 'Oswald', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 700;
       color: var(--gold);
       line-height: 1;
       margin-bottom: 0.3rem;
     }
 
     .stat-label {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
     }
 
@@ -550,27 +590,30 @@
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-eyebrow">Brasnorte — MT · Desde 2022</div>
-  <h1>Transformando <span>Vidas</span><br>Através das Artes Marciais</h1>
-  <p>Tirando crianças da rua, jovens das drogas e adultos da depressão e do estresse. Uma família unida pela disciplina e pelo respeito.</p>
-  <div class="hero-actions">
-    <a href="https://wa.me/5566999519119?text=Olá,%20gostaria%20de%20agendar%20uma%20aula%20experimental!" target="_blank" rel="noopener" class="btn">
-      Agendar Aula Experimental
-    </a>
-    <a href="#sobre" class="btn-outline">Conhecer o Projeto</a>
-  </div>
-  <div class="hero-stats">
-    <div>
-      <div class="stat-num">2022</div>
-      <div class="stat-label">Fundação</div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Brasnorte — MT · Desde 2022</div>
+    <h1>Transformando<br><span>Vidas</span><br>pelas Artes Marciais</h1>
+    <p>Tirando crianças da rua, jovens das drogas e adultos da depressão e do estresse. Uma família unida pela disciplina e pelo respeito.</p>
+    <div class="hero-actions">
+      <a href="https://wa.me/5566999519119?text=Olá,%20gostaria%20de%20agendar%20uma%20aula%20experimental!" target="_blank" rel="noopener" class="btn">
+        Agendar Aula Experimental
+      </a>
+      <a href="#sobre" class="btn-outline">Conhecer o Projeto</a>
     </div>
-    <div>
-      <div class="stat-num">6</div>
-      <div class="stat-label">Modalidades</div>
-    </div>
-    <div>
-      <div class="stat-num">Todas</div>
-      <div class="stat-label">As Idades</div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-num">2022</div>
+        <div class="stat-label">Fundação</div>
+      </div>
+      <div>
+        <div class="stat-num">6</div>
+        <div class="stat-label">Modalidades</div>
+      </div>
+      <div>
+        <div class="stat-num">Todas</div>
+        <div class="stat-label">As Idades</div>
+      </div>
     </div>
   </div>
 </div>
