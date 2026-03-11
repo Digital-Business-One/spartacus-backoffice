@@ -1,0 +1,68 @@
+name: CI/CD — Backoffice
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  # ─── Lint, Typecheck & Build ────────────────────────────────────────────────
+  test:
+    name: Lint, Typecheck & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+  # ─── Deploy → Firebase Hosting ──────────────────────────────────────────────
+  deploy:
+    name: Deploy → Firebase Hosting
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Autenticar no GCP via Workload Identity Federation
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Deploy Firebase Hosting
+        run: |
+          npx firebase-tools deploy \
+            --only hosting \
+            --project=${{ secrets.FIREBASE_PROJECT_ID }} \
+            --non-interactive
