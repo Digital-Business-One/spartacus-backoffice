@@ -1,0 +1,13 @@
+{
+  "projects": {
+    "default": "spartacus-artes-marciais"
+  },
+  "targets": {
+    "spartacus-artes-marciais": {
+      "hosting": {
+        "public-site": ["spartacus-artes-marciais"],
+        "backoffice": ["spartacus-backoffice"]
+      }
+    }
+  }
+}

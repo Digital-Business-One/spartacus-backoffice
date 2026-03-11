@@ -60,9 +60,16 @@ jobs:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
-      - name: Deploy Firebase Hosting
+      - name: Deploy Site Público → spartacus.app.br
         run: |
           npx firebase-tools deploy \
-            --only hosting \
+            --only hosting:public-site \
+            --project=${{ secrets.FIREBASE_PROJECT_ID }} \
+            --non-interactive
+
+      - name: Deploy Backoffice → backoffice.spartacus.app.br
+        run: |
+          npx firebase-tools deploy \
+            --only hosting:backoffice \
             --project=${{ secrets.FIREBASE_PROJECT_ID }} \
             --non-interactive

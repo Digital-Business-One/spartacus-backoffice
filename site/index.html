@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Associação Spartacus — Artes Marciais | Brasnorte-MT</title>
+  <meta name="description" content="Transformando vidas através das artes marciais. Jiu-Jitsu, Muay Thai, MMA, Capoeira em Brasnorte-MT desde 2022." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red:    #c41e3a;
+      --red-dk: #9b1830;
+      --gold:   #e8b923;
+      --bg:     #0a0a0a;
+      --bg2:    #111111;
+      --bg3:    #1a1a1a;
+      --text:   #f0f0f0;
+      --muted:  #9ca3af;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Oswald', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    img { max-width: 100%; display: block; }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .section-title span { color: var(--red); }
+
+    .section-sub {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 560px;
+      margin-bottom: 48px;
+    }
+
+    /* ── NAV ─────────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .nav-logo {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .nav-logo span { color: var(--red); }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-cta {
+      background: var(--red);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: background 0.2s;
+    }
+
+    .nav-cta:hover { background: var(--red-dk); color: #fff; }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+    }
+
+    /* ── HERO ────────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      background: url('/images/jiu-jitsu.jpg') center/cover no-repeat;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        135deg,
+        rgba(10,10,10,0.92) 0%,
+        rgba(10,10,10,0.70) 50%,
+        rgba(196,30,58,0.15) 100%
+      );
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      padding: 120px 24px 80px;
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 2px;
+      background: var(--gold);
+    }
+
+    .hero-title {
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 700;
+      line-height: 1.0;
+      margin-bottom: 24px;
+    }
+
+    .hero-title span { color: var(--red); }
+
+    .hero-desc {
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      color: var(--muted);
+      max-width: 560px;
+      margin-bottom: 40px;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: var(--red);
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 4px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-primary:hover { background: var(--red-dk); transform: translateY(-1px); }
+
+    .btn-outline {
+      border: 1px solid rgba(255,255,255,0.25);
+      color: var(--text);
+      padding: 14px 28px;
+      border-radius: 4px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+
+    .btn-outline:hover { border-color: var(--text); transform: translateY(-1px); }
+
+    .hero-stats {
+      display: flex;
+      gap: 40px;
+      margin-top: 64px;
+      padding-top: 40px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      flex-wrap: wrap;
+    }
+
+    .stat-num {
+      font-family: 'Oswald', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--red);
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── SOBRE ───────────────────────────────────────────── */
+    .sobre {
+      padding: 100px 0;
+      background: var(--bg2);
+    }
+
+    .sobre-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .sobre-img {
+      position: relative;
+    }
+
+    .sobre-img img {
+      width: 100%;
+      height: 440px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .sobre-img::after {
+      content: '';
+      position: absolute;
+      bottom: -16px;
+      right: -16px;
+      width: 60%;
+      height: 60%;
+      border: 2px solid var(--red);
+      border-radius: 4px;
+      z-index: -1;
+    }
+
+    .sobre-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 12px;
+    }
+
+    .sobre-text {
+      color: var(--muted);
+      margin-bottom: 16px;
+      line-height: 1.8;
+    }
+
+    .sobre-founder {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 32px;
+      padding: 20px;
+      background: var(--bg3);
+      border-left: 3px solid var(--red);
+      border-radius: 0 4px 4px 0;
+    }
+
+    .founder-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .founder-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .founder-role {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    @media (max-width: 768px) {
+      .sobre-grid { grid-template-columns: 1fr; }
+      .sobre-img::after { display: none; }
+    }
+
+    /* ── VALORES ─────────────────────────────────────────── */
+    .valores {
+      padding: 100px 0;
+      background: var(--bg);
+    }
+
+    .valores-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+    }
+
+    .valor-card {
+      padding: 32px 24px;
+      background: var(--bg2);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 4px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .valor-card:hover {
+      border-color: var(--red);
+      transform: translateY(-4px);
+    }
+
+    .valor-icon {
+      font-size: 2rem;
+      margin-bottom: 16px;
+    }
+
+    .valor-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .valor-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* ── MODALIDADES ─────────────────────────────────────── */
+    .modalidades {
+      padding: 100px 0;
+      background: var(--bg2);
+    }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .modal-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 4px;
+      cursor: default;
+    }
+
+    .modal-card img {
+      width: 100%;
+      height: 260px;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .modal-card:hover img { transform: scale(1.05); }
+
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(10,10,10,0.95) 30%, transparent 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 24px;
+    }
+
+    .modal-name {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    .modal-desc {
+      font-size: 0.85rem;
+      color: rgba(240,240,240,0.7);
+      line-height: 1.5;
+    }
+
+    .modal-tag {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: var(--red);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 2px;
+    }
+
+    /* Extra modalities (text-only) */
+    .modal-card-text {
+      padding: 28px 24px;
+      background: var(--bg3);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* ── HORÁRIOS ────────────────────────────────────────── */
+    .horarios {
+      padding: 100px 0;
+      background: var(--bg);
+    }
+
+    .horarios-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .horario-card {
+      background: var(--bg2);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .horario-header {
+      background: var(--red);
+      padding: 14px 20px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .horario-body { padding: 20px; }
+
+    .horario-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.9rem;
+    }
+
+    .horario-row:last-child { border-bottom: none; }
+
+    .horario-dias { color: var(--muted); }
+
+    .horario-time {
+      font-weight: 600;
+      color: var(--gold);
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+    }
+
+    .horario-note {
+      margin-top: 12px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* ── CONTATO ─────────────────────────────────────────── */
+    .contato {
+      padding: 100px 0;
+      background: var(--bg2);
+    }
+
+    .contato-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: start;
+    }
+
+    .contato-item {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 32px;
+    }
+
+    .contato-icon {
+      width: 44px;
+      height: 44px;
+      background: rgba(196,30,58,0.12);
+      border: 1px solid rgba(196,30,58,0.3);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .contato-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .contato-value {
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .contato-value a { transition: color 0.2s; }
+    .contato-value a:hover { color: var(--red); }
+
+    .whatsapp-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #25d366;
+      color: #fff;
+      padding: 14px 24px;
+      border-radius: 4px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: background 0.2s;
+      margin-top: 8px;
+    }
+
+    .whatsapp-btn:hover { background: #1ebe5c; color: #fff; }
+
+    .cta-box {
+      background: var(--bg3);
+      border: 1px solid rgba(196,30,58,0.2);
+      border-radius: 4px;
+      padding: 40px;
+    }
+
+    .cta-box h3 {
+      font-size: 1.6rem;
+      margin-bottom: 12px;
+    }
+
+    .cta-box p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 28px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 768px) {
+      .contato-grid { grid-template-columns: 1fr; gap: 40px; }
+    }
+
+    /* ── FOOTER ──────────────────────────────────────────── */
+    footer {
+      background: #050505;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 48px 0 32px;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 32px;
+      margin-bottom: 40px;
+    }
+
+    .footer-brand p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 8px;
+      max-width: 280px;
+    }
+
+    .footer-links h4 {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .footer-links ul { list-style: none; }
+
+    .footer-links li { margin-bottom: 8px; }
+
+    .footer-links a {
+      font-size: 0.9rem;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--text); }
+
+    .footer-bottom {
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .footer-bottom a { color: var(--muted); transition: color 0.2s; }
+    .footer-bottom a:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <span>Spartacus</span> Artes Marciais
+      </div>
+      <ul class="nav-links">
+        <li><a href="#sobre">Sobre</a></li>
+        <li><a href="#modalidades">Modalidades</a></li>
+        <li><a href="#horarios">Horários</a></li>
+        <li><a href="#contato">Contato</a></li>
+      </ul>
+      <a href="https://wa.me/5566999519119" target="_blank" rel="noopener" class="nav-cta">
+        Aula Gratuita
+      </a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">Brasnorte — MT · Desde 2022</div>
+      <h1 class="hero-title">
+        Transformando<br>
+        <span>Vidas</span> Através<br>
+        das Artes Marciais
+      </h1>
+      <p class="hero-desc">
+        Tirando crianças da rua, jovens das drogas e adultos da depressão e do estresse.
+        Uma família unida pela disciplina, respeito e superação.
+      </p>
+      <div class="hero-actions">
+        <a href="https://wa.me/5566999519119" target="_blank" rel="noopener" class="btn-primary">
+          Agendar Aula Experimental
+        </a>
+        <a href="#sobre" class="btn-outline">Conhecer o Projeto</a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="stat-num">2022</div>
+          <div class="stat-label">Fundação</div>
+        </div>
+        <div>
+          <div class="stat-num">6</div>
+          <div class="stat-label">Modalidades</div>
+        </div>
+        <div>
+          <div class="stat-num">Todas</div>
+          <div class="stat-label">As Idades</div>
+        </div>
+        <div>
+          <div class="stat-num">1</div>
+          <div class="stat-label">Missão</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOBRE / MISSÃO -->
+  <section class="sobre" id="sobre">
+    <div class="container">
+      <div class="sobre-grid">
+        <div class="sobre-img">
+          <img src="/images/capoeira.jpg" alt="Treino de artes marciais — Associação Spartacus" />
+        </div>
+        <div>
+          <p class="sobre-tag">Nossa Missão</p>
+          <h2 class="section-title">A Força que <span>Une</span> a Comunidade</h2>
+          <p class="sobre-text">
+            A Associação Spartacus nasceu em fevereiro de 2022 em Brasnorte-MT com um
+            propósito claro: transformar vidas através das artes marciais. Mais do que um
+            projeto esportivo, somos um instrumento de transformação social.
+          </p>
+          <p class="sobre-text">
+            Trabalhamos para tirar crianças da rua, afastar jovens das drogas e oferecer
+            aos adultos uma saída saudável para a depressão e o estresse do dia a dia.
+            Acreditamos que a disciplina e o respeito aprendidos no tatame se refletem
+            em toda a vida.
+          </p>
+          <p class="sobre-text">
+            Afiliados ao <strong>Lotus Club</strong>, sob a orientação do Sensei Claudio Felix,
+            nossos alunos recebem ensinamentos de alta qualidade com uma linhagem
+            respeitada nas artes marciais.
+          </p>
+          <div class="sobre-founder">
+            <div class="founder-avatar">IA</div>
+            <div>
+              <div class="founder-name">Prof. Istanrley Araújo</div>
+              <div class="founder-role">Fundador e Instrutor Principal — CNPJ 59.933.142/0001-54</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VALORES -->
+  <section class="valores">
+    <div class="container">
+      <h2 class="section-title">Nossos <span>Valores</span></h2>
+      <p class="section-sub">Os pilares que guiam cada treino, cada competição e cada vida transformada.</p>
+      <div class="valores-grid">
+        <div class="valor-card">
+          <div class="valor-icon">🏆</div>
+          <div class="valor-title">Bem-Estar</div>
+          <div class="valor-desc">Promovendo saúde física e mental através da prática regular das artes marciais.</div>
+        </div>
+        <div class="valor-card">
+          <div class="valor-icon">🤝</div>
+          <div class="valor-title">Comunidade</div>
+          <div class="valor-desc">Crianças, adolescentes e adultos unidos pela disciplina e pelo respeito mútuo.</div>
+        </div>
+        <div class="valor-card">
+          <div class="valor-icon">⭐</div>
+          <div class="valor-title">Excelência</div>
+          <div class="valor-desc">Instrutores qualificados e metodologia comprovada para o desenvolvimento integral.</div>
+        </div>
+        <div class="valor-card">
+          <div class="valor-icon">🔥</div>
+          <div class="valor-title">Transformação</div>
+          <div class="valor-desc">Mudando vidas e construindo um futuro melhor para a comunidade de Brasnorte.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODALIDADES -->
+  <section class="modalidades" id="modalidades">
+    <div class="container">
+      <h2 class="section-title">Nossas <span>Modalidades</span></h2>
+      <p class="section-sub">Do tatame ao ringue — encontre a arte marcial que vai mudar a sua vida.</p>
+      <div class="modal-grid">
+
+        <div class="modal-card">
+          <span class="modal-tag">Destaque</span>
+          <img src="/images/jiu-jitsu.jpg" alt="Jiu-Jitsu — Associação Spartacus" />
+          <div class="modal-overlay">
+            <div class="modal-name">Jiu-Jitsu</div>
+            <div class="modal-desc">Arte marcial brasileira focada em técnicas de solo, alavancas e finalizações. Desenvolve disciplina, respeito e autoconfiança.</div>
+          </div>
+        </div>
+
+        <div class="modal-card">
+          <img src="/images/muay-thai.jpg" alt="Muay Thai — Associação Spartacus" />
+          <div class="modal-overlay">
+            <div class="modal-name">Muay Thai</div>
+            <div class="modal-desc">A "arte dos oito membros" — punhos, cotovelos, joelhos e canelas para um condicionamento físico completo.</div>
+          </div>
+        </div>
+
+        <div class="modal-card">
+          <img src="/images/mma.jpg" alt="MMA — Associação Spartacus" />
+          <div class="modal-overlay">
+            <div class="modal-name">MMA</div>
+            <div class="modal-desc">Artes Marciais Mistas combinando técnicas de diversas modalidades. Treinamento completo em striking e grappling.</div>
+          </div>
+        </div>
+
+        <div class="modal-card">
+          <img src="/images/capoeira.jpg" alt="Capoeira — Associação Spartacus" />
+          <div class="modal-overlay">
+            <div class="modal-name">Capoeira</div>
+            <div class="modal-desc">Arte marcial brasileira que mistura luta, dança, música e cultura. Desenvolve agilidade, flexibilidade e expressão.</div>
+          </div>
+        </div>
+
+        <div class="modal-card">
+          <img src="/images/no-gi.jpg" alt="No-Gi Grappling — Associação Spartacus" />
+          <div class="modal-overlay">
+            <div class="modal-name">No-Gi (Grappling)</div>
+            <div class="modal-desc">Jiu-Jitsu sem kimono, focado em controle, quedas e aplicações reais. Velocidade e transições rápidas.</div>
+          </div>
+        </div>
+
+        <div class="modal-card modal-card-text">
+          <div class="modal-name" style="font-family:'Oswald',sans-serif; font-size:1.4rem; text-transform:uppercase; margin-bottom:12px;">Luta Livre</div>
+          <div class="modal-desc" style="color:var(--muted); font-size:0.9rem; line-height:1.7; margin-bottom:20px;">Modalidade brasileira de submission wrestling. Focada em quedas, controle e finalização sem kimono. Adaptabilidade e técnica.</div>
+          <a href="https://wa.me/5566999519119" target="_blank" rel="noopener" style="color:var(--red); font-size:0.85rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;">Consultar Horários →</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- HORÁRIOS -->
+  <section class="horarios" id="horarios">
+    <div class="container">
+      <h2 class="section-title">Grade de <span>Horários</span></h2>
+      <p class="section-sub">Turmas para todas as idades. Chegue 10 minutos antes para se preparar.</p>
+      <div class="horarios-grid">
+
+        <div class="horario-card">
+          <div class="horario-header">Infantil & Juvenil</div>
+          <div class="horario-body">
+            <div class="horario-row">
+              <span class="horario-dias">Ter a Sex</span>
+              <span class="horario-time">09h – 10h</span>
+            </div>
+            <div class="horario-row">
+              <span class="horario-dias">Ter a Sex</span>
+              <span class="horario-time">16h – 17h</span>
+            </div>
+            <p class="horario-note">Turmas para crianças e adolescentes.</p>
+          </div>
+        </div>
+
+        <div class="horario-card">
+          <div class="horario-header">Jiu-Jitsu</div>
+          <div class="horario-body">
+            <div class="horario-row">
+              <span class="horario-dias">Seg e Qua</span>
+              <span class="horario-time">16h – 17h</span>
+            </div>
+            <p class="horario-note">Todas as idades. Gi e No-Gi.</p>
+          </div>
+        </div>
+
+        <div class="horario-card">
+          <div class="horario-header">Muay Thai</div>
+          <div class="horario-body">
+            <div class="horario-row">
+              <span class="horario-dias">Seg, Qua e Sex</span>
+              <span class="horario-time">20h – 21h</span>
+            </div>
+            <p class="horario-note">Todas as idades. Instruído pelo Mestre Júnior.</p>
+          </div>
+        </div>
+
+        <div class="horario-card">
+          <div class="horario-header">Capoeira</div>
+          <div class="horario-body">
+            <div class="horario-row">
+              <span class="horario-dias">Segunda</span>
+              <span class="horario-time">17h – 18h</span>
+            </div>
+            <p class="horario-note">Todas as idades. Música e movimento.</p>
+          </div>
+        </div>
+
+        <div class="horario-card">
+          <div class="horario-header">Adultos — Geral</div>
+          <div class="horario-body">
+            <div class="horario-row">
+              <span class="horario-dias">Sexta</span>
+              <span class="horario-time">19h – 20h</span>
+            </div>
+            <p class="horario-note">Treino geral para adultos.</p>
+          </div>
+        </div>
+
+        <div class="horario-card">
+          <div class="horario-header">MMA & Luta Livre</div>
+          <div class="horario-body">
+            <div class="horario-row">
+              <span class="horario-dias" style="color:var(--muted)">Consultar</span>
+              <span class="horario-time">—</span>
+            </div>
+            <p class="horario-note">Entre em contato pelo WhatsApp para informações.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTATO -->
+  <section class="contato" id="contato">
+    <div class="container">
+      <div class="contato-grid">
+        <div>
+          <h2 class="section-title">Venha ser <span>Spartacus</span></h2>
+          <p class="section-sub" style="margin-bottom:40px;">
+            Agende sua aula experimental gratuita e faça parte da família Spartacus.
+            Atendemos crianças, jovens e adultos.
+          </p>
+
+          <div class="contato-item">
+            <div class="contato-icon">📱</div>
+            <div>
+              <div class="contato-label">WhatsApp</div>
+              <div class="contato-value">
+                <a href="https://wa.me/5566999519119" target="_blank" rel="noopener">(66) 99951-9119 — Gisele</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="contato-item">
+            <div class="contato-icon">📸</div>
+            <div>
+              <div class="contato-label">Instagram</div>
+              <div class="contato-value">
+                <a href="https://instagram.com/spartacus_artes_marcias" target="_blank" rel="noopener">@spartacus_artes_marcias</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="contato-item">
+            <div class="contato-icon">📍</div>
+            <div>
+              <div class="contato-label">Localização</div>
+              <div class="contato-value">Brasnorte — Mato Grosso (MT)</div>
+            </div>
+          </div>
+
+          <a href="https://wa.me/5566999519119?text=Ol%C3%A1%2C%20gostaria%20de%20agendar%20uma%20aula%20experimental!"
+             target="_blank" rel="noopener" class="whatsapp-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+            Falar no WhatsApp
+          </a>
+        </div>
+
+        <div class="cta-box">
+          <h3>Aula Experimental<br><span style="color:var(--red)">Gratuita</span></h3>
+          <p>
+            Não sabe por onde começar? Venha experimentar! Oferecemos uma aula
+            gratuita para você conhecer o ambiente, os instrutores e escolher
+            a modalidade ideal.
+          </p>
+          <p>
+            <strong>Por que escolher a Spartacus?</strong>
+          </p>
+          <ul style="list-style:none; margin: 12px 0 24px; display:flex; flex-direction:column; gap:8px;">
+            <li style="display:flex; gap:10px; align-items:flex-start; font-size:0.9rem; color:var(--muted)">
+              <span style="color:var(--red); flex-shrink:0">✓</span> Instrutores qualificados e experientes
+            </li>
+            <li style="display:flex; gap:10px; align-items:flex-start; font-size:0.9rem; color:var(--muted)">
+              <span style="color:var(--red); flex-shrink:0">✓</span> Ambiente familiar e acolhedor
+            </li>
+            <li style="display:flex; gap:10px; align-items:flex-start; font-size:0.9rem; color:var(--muted)">
+              <span style="color:var(--red); flex-shrink:0">✓</span> Turmas para todas as idades
+            </li>
+            <li style="display:flex; gap:10px; align-items:flex-start; font-size:0.9rem; color:var(--muted)">
+              <span style="color:var(--red); flex-shrink:0">✓</span> Horários flexíveis
+            </li>
+            <li style="display:flex; gap:10px; align-items:flex-start; font-size:0.9rem; color:var(--muted)">
+              <span style="color:var(--red); flex-shrink:0">✓</span> Afiliados ao Lotus Club — Sensei Claudio Felix
+            </li>
+          </ul>
+          <a href="https://wa.me/5566999519119?text=Ol%C3%A1%2C%20gostaria%20de%20agendar%20uma%20aula%20experimental%20gratuita!"
+             target="_blank" rel="noopener" class="btn-primary" style="display:inline-block;">
+            Agendar Agora
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <div class="nav-logo"><span>Spartacus</span> Artes Marciais</div>
+          <p>Transformando vidas através das artes marciais desde 2022. Brasnorte — MT.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Modalidades</h4>
+          <ul>
+            <li><a href="#modalidades">Jiu-Jitsu</a></li>
+            <li><a href="#modalidades">Muay Thai</a></li>
+            <li><a href="#modalidades">MMA</a></li>
+            <li><a href="#modalidades">Capoeira</a></li>
+            <li><a href="#modalidades">No-Gi · Luta Livre</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Institucional</h4>
+          <ul>
+            <li><a href="#sobre">Sobre</a></li>
+            <li><a href="#horarios">Horários</a></li>
+            <li><a href="#contato">Contato</a></li>
+            <li><a href="/privacidade/">Política de Privacidade</a></li>
+            <li><a href="/termos-de-uso/">Termos de Uso</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Redes Sociais</h4>
+          <ul>
+            <li>
+              <a href="https://instagram.com/spartacus_artes_marcias" target="_blank" rel="noopener">
+                Instagram
+              </a>
+            </li>
+            <li>
+              <a href="https://wa.me/5566999519119" target="_blank" rel="noopener">
+                WhatsApp
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2025 Associação Spartacus. CNPJ 59.933.142/0001-54</span>
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <a href="/privacidade/">Privacidade</a>
+          <a href="/exclusao-de-dados/">Exclusão de Dados</a>
+          <a href="/termos-de-uso/">Termos de Uso</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
