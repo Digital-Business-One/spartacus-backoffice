@@ -3,264 +3,273 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Termos de Uso — Spartacus Artes Marciais</title>
-  <meta name="description" content="Termos de Uso do aplicativo e site da Associação Spartacus Artes Marciais." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <title>Termos de Uso — Spartacus Plataforma Digital</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --red: #c41e3a;
-      --bg:  #0a0a0a;
-      --bg2: #111111;
-      --text: #f0f0f0;
-      --muted: #9ca3af;
+      --bg-primary:   #0B0D12;
+      --bg-secondary: #1E1F26;
+      --bg-card:      #16181f;
+      --gold:         #C6A34E;
+      --gold-dim:     #a8883e;
+      --text-primary: #E5E5E5;
+      --text-muted:   #9099a8;
+      --border:       #2a2d38;
     }
+
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: Inter, Roboto, system-ui, sans-serif;
       font-size: 16px;
       line-height: 1.7;
+      min-height: 100vh;
     }
-    a { color: var(--red); text-decoration: none; }
-    a:hover { text-decoration: underline; }
 
-    nav {
-      background: var(--bg2);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      padding: 16px 24px;
+    a { color: var(--gold); text-decoration: none; }
+    a:hover { text-decoration: underline; color: var(--gold-dim); }
+
+    header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 1.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .nav-logo {
-      font-family: 'Oswald', sans-serif;
-      font-size: 1.2rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
+
+    .logo-mark {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--gold);
+      letter-spacing: 0.05em;
       text-transform: uppercase;
-      color: var(--text);
-      text-decoration: none;
     }
-    .nav-logo span { color: var(--red); }
+
+    .logo-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
     .nav-back {
       font-size: 0.85rem;
-      color: var(--muted);
+      color: var(--text-muted);
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 0.4rem;
     }
-    .nav-back:hover { color: var(--text); text-decoration: none; }
+
+    .nav-back:hover { color: var(--text-primary); text-decoration: none; }
+
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
 
     .page-header {
-      background: var(--bg2);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      padding: 60px 24px 48px;
-      text-align: center;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
     }
-    .page-header h1 {
-      font-family: 'Oswald', sans-serif;
-      font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      margin-bottom: 12px;
-    }
-    .page-header h1 span { color: var(--red); }
-    .page-header p { color: var(--muted); font-size: 0.9rem; }
 
-    .content {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 64px 24px 80px;
+    .page-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
     }
-    .section {
-      margin-bottom: 48px;
-    }
-    .section h2 {
-      font-family: 'Oswald', sans-serif;
-      font-size: 1.2rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text);
-      margin-bottom: 16px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .section h2::before {
-      content: '';
-      display: inline-block;
-      width: 4px;
-      height: 18px;
-      background: var(--red);
-      border-radius: 2px;
-    }
-    .section p {
-      color: var(--muted);
-      margin-bottom: 14px;
-    }
-    .section ul {
-      list-style: none;
-      padding: 0;
-      margin-top: 8px;
-    }
-    .section ul li {
-      color: var(--muted);
-      padding: 8px 0 8px 20px;
-      position: relative;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-    .section ul li:last-child { border-bottom: none; }
-    .section ul li::before {
-      content: '→';
-      position: absolute;
-      left: 0;
-      color: var(--red);
+
+    .page-header .meta {
       font-size: 0.85rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
     }
+
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--gold);
+      margin: 2.25rem 0 0.75rem;
+      padding-left: 0.75rem;
+      border-left: 3px solid var(--gold);
+    }
+
+    p { margin-bottom: 0.9rem; color: var(--text-primary); }
+
+    ul, ol {
+      padding-left: 1.5rem;
+      margin-bottom: 0.9rem;
+      color: var(--text-primary);
+    }
+
+    li { margin-bottom: 0.4rem; }
+
+    .callout {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--gold);
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0 1.5rem;
+      font-size: 0.95rem;
+    }
+
+    .callout strong { color: var(--gold); }
+
+    .section { margin-bottom: 0.5rem; }
 
     footer {
-      background: #050505;
-      border-top: 1px solid rgba(255,255,255,0.06);
-      padding: 32px 24px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      padding: 1.5rem;
       text-align: center;
       font-size: 0.8rem;
-      color: var(--muted);
+      color: var(--text-muted);
     }
-    footer a { color: var(--muted); margin: 0 10px; }
-    footer a:hover { color: var(--text); text-decoration: none; }
+
+    footer a { color: var(--text-muted); }
+    footer a:hover { color: var(--gold); text-decoration: none; }
+
+    @media (max-width: 600px) {
+      .page-header h1 { font-size: 1.4rem; }
+    }
   </style>
 </head>
 <body>
 
-  <nav>
-    <a href="/" class="nav-logo"><span>Spartacus</span> Artes Marciais</a>
-    <a href="/" class="nav-back">← Página Inicial</a>
-  </nav>
+<header>
+  <div>
+    <div class="logo-mark">Spartacus</div>
+    <div class="logo-sub">Plataforma Digital</div>
+  </div>
+  <a href="/" class="nav-back">← Página Inicial</a>
+</header>
 
+<main>
   <div class="page-header">
-    <h1>Termos de <span>Uso</span></h1>
-    <p>Última atualização: 2025 · Associação Spartacus Artes Marciais — CNPJ 59.933.142/0001-54</p>
+    <h1>Termos de Uso</h1>
+    <div class="meta">
+      <span>Versão 1.0</span>
+      <span>Vigência: 2025</span>
+      <span>Associação Spartacus · CNPJ 59.933.142/0001-54</span>
+    </div>
   </div>
 
-  <div class="content">
-
-    <div class="section">
-      <h2>1. Termos</h2>
-      <p>
-        Ao acessar o site ou aplicativo Spartacus, você concorda em cumprir estes termos de serviço,
-        todas as leis e regulamentos aplicáveis, e é responsável pelo cumprimento de todas as leis
-        locais aplicáveis. Se você não concordar com algum desses termos, está proibido de usar ou
-        acessar este serviço. Os materiais contidos neste site são protegidos pelas leis de direitos
-        autorais e marcas comerciais aplicáveis.
-      </p>
-    </div>
-
-    <div class="section">
-      <h2>2. Uso de Licença</h2>
-      <p>
-        É concedida permissão para baixar temporariamente uma cópia dos materiais (informações ou
-        software) no site Spartacus, apenas para visualização transitória pessoal e não comercial.
-        Esta é a concessão de uma licença, não uma transferência de título. Sob esta licença, você
-        não pode:
-      </p>
-      <ul>
-        <li>Modificar ou copiar os materiais</li>
-        <li>Usar os materiais para qualquer finalidade comercial ou para exibição pública</li>
-        <li>Tentar descompilar ou fazer engenharia reversa de qualquer software contido no site</li>
-        <li>Remover quaisquer direitos autorais ou outras notações de propriedade dos materiais</li>
-        <li>Transferir os materiais para outra pessoa ou espelhar os materiais em qualquer outro servidor</li>
-      </ul>
-      <p>
-        Esta licença será automaticamente rescindida se você violar alguma dessas restrições e poderá
-        ser rescindida pela Spartacus a qualquer momento. Ao encerrar a visualização desses materiais
-        ou após o término desta licença, você deve apagar todos os materiais baixados em sua posse,
-        seja em formato eletrônico ou impresso.
-      </p>
-    </div>
-
-    <div class="section">
-      <h2>3. Isenção de Responsabilidade</h2>
-      <p>
-        Os materiais no site da Spartacus são fornecidos "como estão". A Spartacus não oferece
-        garantias, expressas ou implícitas, e por este meio isenta e nega todas as outras garantias,
-        incluindo, sem limitação, garantias implícitas ou condições de comercialização, adequação
-        a um fim específico ou não violação de propriedade intelectual ou outra violação de direitos.
-      </p>
-      <p>
-        Além disso, a Spartacus não garante ou faz qualquer representação relativa à precisão,
-        aos resultados prováveis ou à confiabilidade do uso dos materiais em seu site ou de outra
-        forma relacionado a esses materiais ou em sites vinculados.
-      </p>
-    </div>
-
-    <div class="section">
-      <h2>4. Limitações</h2>
-      <p>
-        Em nenhum caso a Spartacus ou seus fornecedores serão responsáveis por quaisquer danos
-        (incluindo, sem limitação, danos por perda de dados ou lucro ou devido a interrupção dos
-        negócios) decorrentes do uso ou da incapacidade de usar os materiais na Spartacus, mesmo
-        que a Spartacus ou um representante autorizado tenha sido notificado oralmente ou por escrito
-        da possibilidade de tais danos. Como algumas jurisdições não permitem limitações em garantias
-        implícitas, ou limitações de responsabilidade por danos consequentes ou incidentais, essas
-        limitações podem não se aplicar a você.
-      </p>
-    </div>
-
-    <div class="section">
-      <h2>5. Precisão dos Materiais</h2>
-      <p>
-        Os materiais exibidos no site da Spartacus podem incluir erros técnicos, tipográficos ou
-        fotográficos. A Spartacus não garante que qualquer material em seu site seja preciso,
-        completo ou atual. A Spartacus pode fazer alterações nos materiais contidos em seu site
-        a qualquer momento, sem aviso prévio. No entanto, a Spartacus não se compromete a atualizar
-        os materiais.
-      </p>
-    </div>
-
-    <div class="section">
-      <h2>6. Links</h2>
-      <p>
-        A Spartacus não analisou todos os sites vinculados ao seu site e não é responsável pelo
-        conteúdo de nenhum site vinculado. A inclusão de qualquer link não implica endosso pela
-        Spartacus do site. O uso de qualquer site vinculado é por conta e risco do usuário.
-      </p>
-    </div>
-
-    <div class="section">
-      <h2>7. Modificações</h2>
-      <p>
-        A Spartacus pode revisar estes termos de serviço do site a qualquer momento, sem aviso
-        prévio. Ao usar este site ou aplicativo, você concorda em ficar vinculado à versão atual
-        desses termos de serviço.
-      </p>
-    </div>
-
-    <div class="section">
-      <h2>8. Lei Aplicável</h2>
-      <p>
-        Estes termos e condições são regidos e interpretados de acordo com as leis da República
-        Federativa do Brasil. Você se submete irrevogavelmente à jurisdição dos tribunais competentes
-        no estado de Mato Grosso para resolução de quaisquer disputas.
-      </p>
-    </div>
-
+  <div class="callout">
+    <strong>Ao acessar o site ou aplicativo Spartacus</strong>, você concorda em cumprir estes termos de serviço e todas as leis e regulamentos aplicáveis. Se não concordar com algum desses termos, está proibido de usar ou acessar este serviço.
   </div>
 
-  <footer>
-    <p style="margin-bottom:12px;">© 2025 Associação Spartacus. CNPJ 59.933.142/0001-54 · Brasnorte — MT</p>
-    <div>
-      <a href="/">Página Inicial</a>
-      <a href="/privacidade/">Política de Privacidade</a>
-      <a href="/exclusao-dados/">Exclusão de Dados</a>
-    </div>
-  </footer>
+  <div class="section">
+    <h2>1. Termos</h2>
+    <p>
+      Ao acessar o site ou aplicativo Spartacus, você concorda em cumprir estes termos de serviço,
+      todas as leis e regulamentos aplicáveis, e é responsável pelo cumprimento de todas as leis
+      locais aplicáveis. Os materiais contidos neste site são protegidos pelas leis de direitos
+      autorais e marcas comerciais aplicáveis.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>2. Uso de Licença</h2>
+    <p>
+      É concedida permissão para baixar temporariamente uma cópia dos materiais no site Spartacus,
+      apenas para visualização transitória pessoal e não comercial. Esta é a concessão de uma
+      licença, não uma transferência de título. Sob esta licença, você não pode:
+    </p>
+    <ul>
+      <li>Modificar ou copiar os materiais</li>
+      <li>Usar os materiais para qualquer finalidade comercial ou para exibição pública</li>
+      <li>Tentar descompilar ou fazer engenharia reversa de qualquer software contido no site</li>
+      <li>Remover quaisquer direitos autorais ou outras notações de propriedade dos materiais</li>
+      <li>Transferir os materiais para outra pessoa ou espelhar os materiais em qualquer outro servidor</li>
+    </ul>
+    <p>
+      Esta licença será automaticamente rescindida se você violar alguma dessas restrições
+      e poderá ser rescindida pela Spartacus a qualquer momento.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>3. Isenção de Responsabilidade</h2>
+    <p>
+      Os materiais no site da Spartacus são fornecidos "como estão". A Spartacus não oferece
+      garantias, expressas ou implícitas, e por este meio isenta e nega todas as outras garantias,
+      incluindo, sem limitação, garantias implícitas ou condições de comercialização, adequação
+      a um fim específico ou não violação de propriedade intelectual.
+    </p>
+    <p>
+      Além disso, a Spartacus não garante ou faz qualquer representação relativa à precisão,
+      aos resultados prováveis ou à confiabilidade do uso dos materiais em seu site.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>4. Limitações</h2>
+    <p>
+      Em nenhum caso a Spartacus ou seus fornecedores serão responsáveis por quaisquer danos
+      (incluindo, sem limitação, danos por perda de dados ou lucro ou devido a interrupção dos
+      negócios) decorrentes do uso ou da incapacidade de usar os materiais na Spartacus, mesmo
+      que a Spartacus ou um representante autorizado tenha sido notificado da possibilidade de
+      tais danos.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>5. Precisão dos Materiais</h2>
+    <p>
+      Os materiais exibidos no site da Spartacus podem incluir erros técnicos, tipográficos ou
+      fotográficos. A Spartacus não garante que qualquer material em seu site seja preciso,
+      completo ou atual. A Spartacus pode fazer alterações nos materiais a qualquer momento,
+      sem aviso prévio.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>6. Links</h2>
+    <p>
+      A Spartacus não analisou todos os sites vinculados ao seu site e não é responsável pelo
+      conteúdo de nenhum site vinculado. A inclusão de qualquer link não implica endosso pela
+      Spartacus. O uso de qualquer site vinculado é por conta e risco do usuário.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>7. Modificações</h2>
+    <p>
+      A Spartacus pode revisar estes termos de serviço a qualquer momento, sem aviso prévio.
+      Ao usar este site ou aplicativo, você concorda em ficar vinculado à versão atual destes
+      termos de serviço.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>8. Lei Aplicável</h2>
+    <p>
+      Estes termos e condições são regidos e interpretados de acordo com as leis da República
+      Federativa do Brasil. Você se submete irrevogavelmente à jurisdição dos tribunais
+      competentes no estado de Mato Grosso para resolução de quaisquer disputas.
+    </p>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <a href="/">Página Inicial</a>
+    &nbsp;·&nbsp;
+    <a href="/privacidade/">Política de Privacidade</a>
+    &nbsp;·&nbsp;
+    <a href="/exclusao-dados/">Exclusão de Dados</a>
+    &nbsp;·&nbsp;
+    © 2025 Associação Spartacus — Brasnorte, MT, Brasil
+  </p>
+</footer>
 
 </body>
 </html>
