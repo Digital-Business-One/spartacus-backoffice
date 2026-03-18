@@ -51,7 +51,14 @@
       justify-content: space-between;
     }
 
-    .logo { display: flex; flex-direction: column; }
+    .logo { display: flex; align-items: center; gap: 0.75rem; }
+
+    .logo img {
+      height: 48px;
+      width: auto;
+    }
+
+    .logo-text { display: flex; flex-direction: column; }
 
     .logo-mark {
       font-family: 'Oswald', sans-serif;
@@ -576,8 +583,11 @@
 <!-- HEADER -->
 <header>
   <div class="logo">
-    <div class="logo-mark">Spartacus</div>
-    <div class="logo-sub">Artes Marciais · Brasnorte-MT</div>
+    <img src="/images/logo.png" alt="Spartacus" />
+    <div class="logo-text">
+      <div class="logo-mark">Spartacus</div>
+      <div class="logo-sub">Artes Marciais · Brasnorte-MT</div>
+    </div>
   </div>
   <nav>
     <a href="#sobre">Sobre</a>
