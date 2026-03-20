@@ -788,22 +788,6 @@
         </div>
       </div>
 
-      <div class="modal-card">
-        <img src="/images/no-gi.jpg" alt="No-Gi Grappling" class="modal-img" />
-        <div class="modal-body">
-          <h3>No-Gi (Grappling)</h3>
-          <p>Jiu-Jitsu sem kimono, focado em controle, quedas e aplicações reais. Velocidade e transições rápidas.</p>
-        </div>
-      </div>
-
-      <div class="modal-card">
-        <div class="modal-body" style="padding: 2rem 1.25rem;">
-          <h3>Luta Livre</h3>
-          <p>Modalidade brasileira de submission wrestling. Focada em quedas, controle e finalização sem kimono.</p>
-          <a href="https://wa.me/5566999519119" target="_blank" rel="noopener" style="font-size:0.85rem; color:var(--gold); margin-top:1rem; display:inline-block; text-decoration:none;">Consultar horários →</a>
-        </div>
-      </div>
-
     </div>
   </div>
 </section>
@@ -822,38 +806,45 @@
           <th>Horário</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="horarios-body">
         <tr>
-          <td>Infantil &amp; Juvenil</td>
-          <td>Terça a Sexta</td>
-          <td>09h–10h · 16h–17h</td>
-        </tr>
-        <tr>
-          <td>Jiu-Jitsu</td>
-          <td>Segunda e Quarta</td>
-          <td>16h–17h</td>
-        </tr>
-        <tr>
-          <td>Muay Thai</td>
-          <td>Segunda, Quarta e Sexta</td>
-          <td>20h–21h</td>
-        </tr>
-        <tr>
-          <td>Capoeira</td>
-          <td>Segunda</td>
-          <td>17h–18h</td>
-        </tr>
-        <tr>
-          <td>Adultos — Geral</td>
-          <td>Sexta</td>
-          <td>19h–20h</td>
-        </tr>
-        <tr>
-          <td>MMA &amp; Luta Livre</td>
-          <td colspan="2" style="color:var(--text-muted)">Consultar via WhatsApp</td>
+          <td colspan="3" style="text-align:center; color:var(--text-muted)">Carregando horários…</td>
         </tr>
       </tbody>
     </table>
+    <script>
+    (function() {
+      var API = 'https://spartacus-backend-rvp6u6qeaa-ue.a.run.app';
+      var PROJECT = 'spartacus-artes-marciais';
+      fetch(API + '/projects/' + PROJECT + '/classes')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var tbody = document.getElementById('horarios-body');
+          if (!data.classes || data.classes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">Nenhuma turma disponível no momento.</td></tr>';
+            return;
+          }
+          var rows = data.classes.map(function(c) {
+            var parts = c.schedule.split(' ');
+            var days = parts[0] || '';
+            var time = parts.slice(1).join(' ') || '';
+            var category = '';
+            if (c.age_range) {
+              if (c.age_range.max && c.age_range.max <= 17) category = 'Kids e Juvenil';
+              else if (c.age_range.min >= 16) category = 'Adultos';
+              else category = 'Todas as idades';
+            }
+            var label = c.modality + (category ? ' — ' + category : '');
+            return '<tr><td>' + label + '</td><td>' + days + '</td><td>' + time + '</td></tr>';
+          });
+          tbody.innerHTML = rows.join('');
+        })
+        .catch(function() {
+          document.getElementById('horarios-body').innerHTML =
+            '<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">Não foi possível carregar os horários.</td></tr>';
+        });
+    })();
+    </script>
   </div>
 </section>
 
