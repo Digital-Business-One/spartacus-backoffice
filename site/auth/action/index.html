@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verificação de E-mail — Spartacus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0B0D12;
+      color: #E5E5E5;
+      font-family: Inter, Roboto, system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      max-width: 480px;
+      width: 100%;
+      background: #16181f;
+      border: 1px solid #2A2D38;
+      border-radius: 16px;
+      padding: 3rem 2.5rem;
+      text-align: center;
+    }
+
+    .logo-img {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1rem;
+      display: block;
+    }
+
+    .logo {
+      font-family: Oswald, sans-serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #C6A34E;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+
+    .logo-sub {
+      font-size: 0.7rem;
+      color: #A0A8B4;
+      letter-spacing: 2px;
+      margin-bottom: 2rem;
+    }
+
+    .icon {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-family: Oswald, sans-serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #C6A34E;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #C6A34E;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    p {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: #E0E0E0;
+      margin-bottom: 1rem;
+    }
+
+    .muted {
+      color: #A0A8B4;
+      font-size: 0.85rem;
+    }
+
+    .status-card {
+      background: #0B0D12;
+      border: 1px solid #2A2D38;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 1.5rem 0;
+      text-align: left;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #2A2D38;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .status-row:last-child { border-bottom: none; }
+    .status-row.done { color: #E5E5E5; }
+    .status-row.active { color: #C6A34E; }
+    .status-row.pending { color: #666; }
+    .active-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #C6A34E;
+      margin-left: auto;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.85rem 2rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.15s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: #C6A34E;
+      color: #0B0D12;
+    }
+
+    .btn-primary:hover {
+      background: #a8883e;
+      text-decoration: none;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #2A2D38;
+      color: #E5E5E5;
+    }
+
+    .btn-outline:hover {
+      border-color: #C6A34E;
+      color: #C6A34E;
+      text-decoration: none;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid #2A2D38;
+      border-top-color: #C6A34E;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1.5rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-text {
+      color: #e74c4c;
+    }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <img src="/images/logo.png" alt="Spartacus" class="logo-img" />
+    <div class="logo">Spartacus</div>
+    <div class="logo-sub">Artes Marciais</div>
+
+    <!-- LOADING STATE -->
+    <div id="state-loading">
+      <div class="spinner"></div>
+      <p>Verificando seu e-mail...</p>
+    </div>
+
+    <!-- SUCCESS STATE -->
+    <div id="state-success" class="hidden">
+      <div class="icon">&#10003;</div>
+      <h1>E-mail confirmado</h1>
+      <div class="subtitle">Cadastro em andamento</div>
+
+      <p>
+        Seu e-mail foi verificado com sucesso! Seus dados estão sendo analisados
+        pela equipe do Projeto Spartacus.
+      </p>
+
+      <p class="muted">
+        Você receberá uma notificação por e-mail quando sua conta for aprovada.
+        Isso normalmente ocorre em até 48 horas.
+      </p>
+
+      <div class="status-card">
+        <div class="status-row done"><span>&#10003;</span> Dados enviados</div>
+        <div class="status-row done"><span>&#10003;</span> E-mail confirmado</div>
+        <div class="status-row active"><span>&#9203;</span> Revisão pela equipe <span class="active-dot"></span></div>
+        <div class="status-row pending"><span>&#128274;</span> Conta ativada</div>
+      </div>
+
+      <div class="actions">
+        <a href="https://spartacus.app.br" class="btn btn-primary">Voltar ao site</a>
+      </div>
+    </div>
+
+    <!-- ERROR STATE -->
+    <div id="state-error" class="hidden">
+      <div class="icon">&#9888;</div>
+      <h1 class="error-text">Erro na verificação</h1>
+
+      <p id="error-message">
+        Não foi possível verificar seu e-mail. O link pode ter expirado ou já ter sido usado.
+      </p>
+
+      <p class="muted">
+        Se o problema persistir, abra o app e toque em "Reenviar e-mail" para receber um novo link.
+      </p>
+
+      <div class="actions">
+        <a href="https://spartacus.app.br" class="btn btn-outline">Voltar ao site</a>
+      </div>
+    </div>
+
+    <!-- INVALID MODE -->
+    <div id="state-invalid" class="hidden">
+      <div class="icon">&#9888;</div>
+      <h1>Link inválido</h1>
+      <p>Este link não é válido ou a ação solicitada não foi reconhecida.</p>
+      <div class="actions">
+        <a href="https://spartacus.app.br" class="btn btn-outline">Voltar ao site</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK (compat for simplicity in static page) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+  <script>
+    firebase.initializeApp({
+      apiKey: 'AIzaSyDGQG2D1GNFANFjaTHU8_y3TBbRYzBeFgU',
+      authDomain: 'spartacus-artes-marciais.firebaseapp.com',
+      projectId: 'spartacus-artes-marciais',
+    });
+
+    function show(id) {
+      ['state-loading', 'state-success', 'state-error', 'state-invalid'].forEach(function(s) {
+        document.getElementById(s).classList.add('hidden');
+      });
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function handleAction() {
+      var params = new URLSearchParams(window.location.search);
+      var mode = params.get('mode');
+      var oobCode = params.get('oobCode');
+
+      if (mode !== 'verifyEmail' || !oobCode) {
+        show('state-invalid');
+        return;
+      }
+
+      firebase.auth().applyActionCode(oobCode)
+        .then(function() {
+          show('state-success');
+        })
+        .catch(function(error) {
+          var msg = 'Não foi possível verificar seu e-mail.';
+          if (error.code === 'auth/expired-action-code') {
+            msg = 'Este link expirou. Abra o app e toque em "Reenviar e-mail" para receber um novo link.';
+          } else if (error.code === 'auth/invalid-action-code') {
+            msg = 'Este link já foi usado ou é inválido. Se você já confirmou seu e-mail, pode fazer login normalmente.';
+          }
+          document.getElementById('error-message').textContent = msg;
+          show('state-error');
+        });
+    }
+
+    handleAction();
+  </script>
+
+</body>
+</html>
