@@ -806,45 +806,39 @@
           <th>Horário</th>
         </tr>
       </thead>
-      <tbody id="horarios-body">
+      <tbody>
         <tr>
-          <td colspan="3" style="text-align:center; color:var(--text-muted)">Carregando horários…</td>
+          <td>Muay Thai — Kids e Juvenil</td>
+          <td>Seg/Qua</td>
+          <td>16:00–17:00</td>
+        </tr>
+        <tr>
+          <td>Capoeira — Todas as Idades</td>
+          <td>Seg</td>
+          <td>17:30–18:30</td>
+        </tr>
+        <tr>
+          <td>Jiu-Jitsu — Kids e Juvenil (Matutino)</td>
+          <td>Ter/Qui</td>
+          <td>09:00–10:00</td>
+        </tr>
+        <tr>
+          <td>Jiu-Jitsu — Kids e Juvenil (Vespertino)</td>
+          <td>Ter/Qui</td>
+          <td>16:00–17:00</td>
+        </tr>
+        <tr>
+          <td>Jiu-Jitsu — Adultos</td>
+          <td>Qui</td>
+          <td>19:30–20:30</td>
+        </tr>
+        <tr>
+          <td>MMA — Cardio e Isometria</td>
+          <td>Sex</td>
+          <td>19:00–20:30</td>
         </tr>
       </tbody>
     </table>
-    <script>
-    (function() {
-      var API = 'https://spartacus-backend-rvp6u6qeaa-ue.a.run.app';
-      var PROJECT = 'spartacus-artes-marciais';
-      fetch(API + '/projects/' + PROJECT + '/classes')
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          var tbody = document.getElementById('horarios-body');
-          if (!data.classes || data.classes.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">Nenhuma turma disponível no momento.</td></tr>';
-            return;
-          }
-          var rows = data.classes.map(function(c) {
-            var parts = c.schedule.split(' ');
-            var days = parts[0] || '';
-            var time = parts.slice(1).join(' ') || '';
-            var category = '';
-            if (c.age_range) {
-              if (c.age_range.max && c.age_range.max <= 17) category = 'Kids e Juvenil';
-              else if (c.age_range.min >= 16) category = 'Adultos';
-              else category = 'Todas as idades';
-            }
-            var label = c.modality + (category ? ' — ' + category : '');
-            return '<tr><td>' + label + '</td><td>' + days + '</td><td>' + time + '</td></tr>';
-          });
-          tbody.innerHTML = rows.join('');
-        })
-        .catch(function() {
-          document.getElementById('horarios-body').innerHTML =
-            '<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">Não foi possível carregar os horários.</td></tr>';
-        });
-    })();
-    </script>
   </div>
 </section>
 
