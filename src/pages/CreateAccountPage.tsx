@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 
 type Role = "owner" | "teacher" | "instructor" | "assistant";
@@ -48,7 +48,6 @@ const ROLES: { code: Role; label: string; icon: string; desc: string }[] = [
 const STEPS = ["Perfil", "Dados Pessoais", "Contato", "Endereço", "Revisão"];
 
 export function CreateAccountPage() {
-  const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [data, setData] = useState<WizardState>(INITIAL);
   const [loading, setLoading] = useState(false);
