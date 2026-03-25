@@ -449,6 +449,627 @@ input, select, button, textarea {
   margin-top: 0.25rem;
 }
 
+.role-card .check-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: transparent;
+  transition: all 0.15s;
+}
+
+.role-card.selected .check-circle,
+.check-circle.checked {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--bg-primary);
+}
+
+/* ── Auth method cards ───────────────────────────────────────────────────── */
+
+.method-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.method-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.method-card:hover {
+  border-color: var(--gold);
+}
+
+.method-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--gold-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.method-icon-google {
+  background: #4285F4;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.method-body {
+  flex: 1;
+}
+
+.method-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.15rem;
+}
+
+.method-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.method-chevron {
+  font-size: 1.5rem;
+  color: var(--text-muted);
+}
+
+/* ── Gender row ──────────────────────────────────────────────────────────── */
+
+.gender-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.gender-option {
+  padding: 0.7rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--bg-primary);
+  transition: all 0.15s;
+}
+
+.gender-option:hover {
+  border-color: var(--gold-dim);
+}
+
+.gender-option.active {
+  border-color: var(--gold);
+  background: var(--gold-muted);
+  color: var(--gold);
+}
+
+/* ── Checkbox row ────────────────────────────────────────────────────────── */
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkbox-input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+
+/* ── Field error ─────────────────────────────────────────────────────────── */
+
+.field-error {
+  font-size: 0.78rem;
+  color: var(--error);
+}
+
+/* ── Loading spinner ─────────────────────────────────────────────────────── */
+
+.loading-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+  margin-left: 0.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Review sections ─────────────────────────────────────────────────────── */
+
+.review-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.review-section-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+  margin-left: 4px;
+}
+
+.review-section-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.review-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.review-row:last-child {
+  border-bottom: none;
+}
+
+.review-row-label {
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.review-row-value {
+  color: var(--text-primary);
+  flex: 2;
+  text-align: right;
+}
+
+/* ── Chips ────────────────────────────────────────────────────────────────── */
+
+.chip {
+  display: inline-block;
+  background: var(--gold-muted);
+  color: var(--gold);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.2rem 0.75rem;
+  border-radius: 99px;
+}
+
+/* ── Notice box ──────────────────────────────────────────────────────────── */
+
+.notice {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(198,163,78,0.08);
+  border: 1px solid rgba(198,163,78,0.2);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ── Class selector cards (matches mobile app design) ────────────────────── */
+
+.class-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.class-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.class-card:hover {
+  border-color: var(--gold-dim);
+}
+
+.class-card.selected {
+  border-color: var(--gold);
+  background: rgba(198,163,78,0.08);
+}
+
+.class-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.class-card-name {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: color 0.15s;
+}
+
+.class-card-name.selected {
+  color: var(--gold);
+}
+
+.class-card-info {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.class-card-teacher {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.class-check {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: transparent;
+  transition: all 0.15s;
+}
+
+.class-check.selected {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--bg-primary);
+}
+
+.class-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.class-empty-sub {
+  font-size: 0.8rem;
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+/* ── Dependent cards ─────────────────────────────────────────────────────── */
+
+.dep-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.dep-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dep-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gold-muted);
+  border: 1px solid rgba(198,163,78,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.dep-info { flex: 1; }
+
+.dep-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.dep-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.dep-remove {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(220,53,69,0.12);
+  border: 1px solid rgba(220,53,69,0.25);
+  color: var(--error);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.dep-remove:hover {
+  background: rgba(220,53,69,0.25);
+}
+
+.dep-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.dep-action-btn {
+  flex: 1;
+  padding: 0.4rem;
+  text-align: center;
+  border-radius: 6px;
+  background: rgba(42,45,62,0.5);
+  border: none;
+  color: var(--gold);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.dep-action-btn:hover {
+  background: rgba(42,45,62,0.8);
+}
+
+.add-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.add-more-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* ── DatePicker ───────────────────────────────────────────────────────────── */
+
+.datepicker-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.datepicker-input-wrap .form-input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.datepicker-toggle {
+  position: absolute;
+  right: 0.65rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.datepicker-toggle:hover {
+  color: var(--gold);
+}
+
+.datepicker-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 50;
+  margin-top: 0.35rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  padding: 0.5rem;
+}
+
+/* ── react-day-picker Spartacus theme ────────────────────────────────────── */
+
+.rdp-spartacus {
+  --rdp-accent-color: var(--gold);
+  --rdp-accent-background-color: var(--gold-muted);
+  --rdp-day-height: 36px;
+  --rdp-day-width: 36px;
+  --rdp-day_button-height: 34px;
+  --rdp-day_button-width: 34px;
+  --rdp-selected-font: 600 0.85rem var(--font-body);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.rdp-spartacus .rdp-months {
+  gap: 0;
+}
+
+.rdp-spartacus .rdp-month_caption {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-primary);
+  padding: 0.5rem 0.25rem 0.75rem;
+}
+
+/* Dropdown selects (month/year) */
+.rdp-spartacus .rdp-dropdowns {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.rdp-spartacus select.rdp-dropdown {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 0.35rem 1.75rem 0.35rem 0.6rem;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%239099a8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+}
+
+.rdp-spartacus select.rdp-dropdown:focus {
+  border-color: var(--gold);
+}
+
+.rdp-spartacus select.rdp-dropdown option {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* Nav buttons (prev/next month) */
+.rdp-spartacus .rdp-button_previous,
+.rdp-spartacus .rdp-button_next {
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  cursor: pointer;
+  background: transparent;
+}
+
+.rdp-spartacus .rdp-button_previous:hover,
+.rdp-spartacus .rdp-button_next:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* Weekday headers */
+.rdp-spartacus .rdp-weekday {
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Day cells */
+.rdp-spartacus .rdp-day {
+  border-radius: 8px;
+  transition: all 0.1s;
+}
+
+.rdp-spartacus .rdp-day_button {
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.rdp-spartacus .rdp-day_button:hover {
+  background: var(--gold-muted);
+}
+
+/* Today */
+.rdp-spartacus .rdp-today .rdp-day_button {
+  border: 1px solid var(--gold);
+  font-weight: 600;
+}
+
+/* Selected day */
+.rdp-spartacus .rdp-selected .rdp-day_button {
+  background: var(--gold);
+  color: var(--bg-primary);
+  font-weight: 700;
+}
+
+.rdp-spartacus .rdp-selected .rdp-day_button:hover {
+  background: var(--gold-dim);
+}
+
+/* Outside days (other months) */
+.rdp-spartacus .rdp-outside .rdp-day_button {
+  color: var(--text-muted);
+  opacity: 0.35;
+}
+
+/* Disabled days */
+.rdp-spartacus .rdp-disabled .rdp-day_button {
+  color: var(--text-muted);
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
 /* ── Empty states ─────────────────────────────────────────────────────────── */
 
 .empty-state {

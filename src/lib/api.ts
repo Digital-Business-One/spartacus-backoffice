@@ -52,3 +52,13 @@ export const api = {
   post: <T>(path: string, data: unknown) =>
     request<T>(path, { method: "POST", body: JSON.stringify(data) }),
 };
+
+/** Check if an email is available for registration (public endpoint, no auth needed). */
+export async function checkEmail(email: string, signal?: AbortSignal): Promise<{ available: boolean }> {
+  const res = await fetch(`${BASE_URL}/auth/check-email?email=${encodeURIComponent(email)}`, {
+    headers: { "X-Project-Id": PROJECT_ID },
+    signal,
+  });
+  if (!res.ok) return { available: true }; // fallback — don't block signup on check failure
+  return res.json();
+}
