@@ -410,7 +410,7 @@
 
     @media (max-width: 768px) {
       .fundador-grid { grid-template-columns: 1fr; }
-      .fundador-foto img { aspect-ratio: 4/3; object-position: center 20%; }
+      .fundador-foto img { aspect-ratio: 4/3; object-position: center 10%; }
     }
 
     /* ── VALORES ─────────────────────────────────────────── */
@@ -450,8 +450,12 @@
     /* ── MODALIDADES ─────────────────────────────────────── */
     .grid-3 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(2, 1fr);
       gap: 1rem;
+    }
+
+    @media (max-width: 640px) {
+      .grid-3 { grid-template-columns: 1fr; }
     }
 
     .modal-card {
@@ -489,32 +493,55 @@
     }
 
     /* ── HORÁRIOS ────────────────────────────────────────── */
-    table {
+    .schedule {
       width: 100%;
-      border-collapse: collapse;
-      font-size: 0.9rem;
       background: var(--bg-card);
       border-radius: 8px;
       overflow: hidden;
+      font-size: 0.9rem;
     }
 
-    th {
+    .schedule-header {
+      display: grid;
+      grid-template-columns: 1fr 100px 120px;
       background: var(--bg-secondary);
-      color: var(--gold);
-      font-weight: 600;
-      text-align: left;
       padding: 0.7rem 1rem;
       border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      color: var(--gold);
     }
 
-    td {
-      padding: 0.65rem 1rem;
-      border-bottom: 1px solid var(--border);
+    .schedule-group { border-bottom: 1px solid var(--border); }
+    .schedule-group:last-child { border-bottom: none; }
+
+    .schedule-mod {
+      padding: 0.65rem 1rem 0.35rem;
+      font-weight: 700;
+      font-size: 0.88rem;
       color: var(--text-primary);
+      background: rgba(198,163,78,0.06);
+      border-bottom: 1px solid rgba(198,163,78,0.10);
     }
 
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(198,163,78,0.04); }
+    .schedule-row {
+      display: grid;
+      grid-template-columns: 1fr 100px 120px;
+      padding: 0.5rem 1rem 0.5rem 1.75rem;
+      border-bottom: 1px solid rgba(42,45,56,0.5);
+      transition: background 0.15s;
+    }
+
+    .schedule-row:last-child { border-bottom: none; }
+    .schedule-row:hover { background: rgba(198,163,78,0.04); }
+
+    .schedule-turma { color: var(--text-muted); font-size: 0.85rem; }
+    .schedule-dias { color: var(--text-primary); }
+    .schedule-hora { color: var(--text-primary); }
+
+    @media (max-width: 640px) {
+      .schedule-header { grid-template-columns: 1fr 80px 90px; font-size: 0.8rem; }
+      .schedule-row { grid-template-columns: 1fr 80px 90px; padding-left: 1rem; font-size: 0.82rem; }
+    }
 
     /* ── CONTATO ─────────────────────────────────────────── */
     .contato-grid {
@@ -798,47 +825,59 @@
     <div class="section-label">Grade</div>
     <div class="section-title">Horários</div>
     <p class="section-desc">Turmas para todas as idades. Chegue 10 minutos antes para se preparar.</p>
-    <table>
-      <thead>
-        <tr>
-          <th>Turma / Modalidade</th>
-          <th>Dias</th>
-          <th>Horário</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Muay Thai — Kids e Juvenil</td>
-          <td>Seg/Qua</td>
-          <td>16:00–17:00</td>
-        </tr>
-        <tr>
-          <td>Capoeira — Todas as Idades</td>
-          <td>Seg</td>
-          <td>17:30–18:30</td>
-        </tr>
-        <tr>
-          <td>Jiu-Jitsu — Kids e Juvenil (Matutino)</td>
-          <td>Ter/Qui</td>
-          <td>09:00–10:00</td>
-        </tr>
-        <tr>
-          <td>Jiu-Jitsu — Kids e Juvenil (Vespertino)</td>
-          <td>Ter/Qui</td>
-          <td>16:00–17:00</td>
-        </tr>
-        <tr>
-          <td>Jiu-Jitsu — Adultos</td>
-          <td>Qui</td>
-          <td>19:30–20:30</td>
-        </tr>
-        <tr>
-          <td>MMA — Cardio e Isometria</td>
-          <td>Sex</td>
-          <td>19:00–20:30</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="schedule">
+      <div class="schedule-header">
+        <span>Turma / Modalidade</span>
+        <span>Dias</span>
+        <span>Horário</span>
+      </div>
+
+      <div class="schedule-group">
+        <div class="schedule-mod">Capoeira</div>
+        <div class="schedule-row">
+          <span class="schedule-turma">Todas as idades</span>
+          <span class="schedule-dias">Seg</span>
+          <span class="schedule-hora">17:30–18:30</span>
+        </div>
+      </div>
+
+      <div class="schedule-group">
+        <div class="schedule-mod">Jiu-Jitsu</div>
+        <div class="schedule-row">
+          <span class="schedule-turma">Kids e Juvenil (Matutino)</span>
+          <span class="schedule-dias">Ter/Qui</span>
+          <span class="schedule-hora">09:00–10:00</span>
+        </div>
+        <div class="schedule-row">
+          <span class="schedule-turma">Kids e Juvenil (Vespertino)</span>
+          <span class="schedule-dias">Ter/Qui</span>
+          <span class="schedule-hora">16:00–17:00</span>
+        </div>
+        <div class="schedule-row">
+          <span class="schedule-turma">Adultos</span>
+          <span class="schedule-dias">Qui</span>
+          <span class="schedule-hora">19:30–20:30</span>
+        </div>
+      </div>
+
+      <div class="schedule-group">
+        <div class="schedule-mod">Muay Thai</div>
+        <div class="schedule-row">
+          <span class="schedule-turma">Kids e Juvenil</span>
+          <span class="schedule-dias">Seg/Qua</span>
+          <span class="schedule-hora">16:00–17:00</span>
+        </div>
+      </div>
+
+      <div class="schedule-group">
+        <div class="schedule-mod">MMA</div>
+        <div class="schedule-row">
+          <span class="schedule-turma">Cardio e Isometria</span>
+          <span class="schedule-dias">Sex</span>
+          <span class="schedule-hora">19:00–20:30</span>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
