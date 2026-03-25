@@ -272,7 +272,7 @@ export function CreateAccountPage() {
           {step === 0 && (
             <StepAuthMethod onSelect={(method, email) => {
               update({ authMethod: method, email: email ?? "" });
-              method === "google" ? setStep(1) : next();
+              if (method === "google") { setStep(1); } else { next(); }
             }} />
           )}
           {visibleSteps[step] === "Acesso" && <StepCredentials data={data} update={update} next={next} back={back} />}
