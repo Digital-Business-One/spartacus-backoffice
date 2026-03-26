@@ -11,30 +11,38 @@ import { api } from "./lib/api";
 import { LoginPage } from "./pages/LoginPage";
 import { CreateAccountPage } from "./pages/CreateAccountPage";
 import { PendingEmailPage } from "./pages/PendingEmailPage";
-import { PendingApprovalPage } from "./pages/PendingApprovalPage";
+import { BlockedStatusPage } from "./pages/BlockedStatusPage";
 import { Layout } from "./components/Layout";
 import { ProjectHubPage } from "./pages/ProjectHubPage";
 import { ClassWizardPage } from "./pages/ClassWizardPage";
 import { AccountsPage } from "./pages/AccountsPage";
+import { AccountDetailPage } from "./pages/AccountDetailPage";
 
-type AppState = "loading" | "auth" | "pending_email" | "pending_approval" | "approved";
+// All account states from RFC-05
+const APPROVED_STATE = "approved";
+const EMAIL_PENDING = "waiting_email_confirmation";
+type AppState = "loading" | "auth" | "email_pending" | "blocked" | "approved";
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [appState, setAppState] = useState<AppState>("loading");
+  const [accountStatus, setAccountStatus] = useState("");
 
   const checkApproval = useCallback(async () => {
     try {
       const res = await api.get<{ approvalStatus: string }>("/auth/me");
-      if (res.approvalStatus === "approved") {
+      const status = res.approvalStatus;
+      setAccountStatus(status);
+      if (status === APPROVED_STATE) {
         setAppState("approved");
-      } else if (res.approvalStatus === "pending_email") {
-        setAppState("pending_email");
+      } else if (status === EMAIL_PENDING) {
+        setAppState("email_pending");
       } else {
-        setAppState("pending_approval");
+        setAppState("blocked");
       }
     } catch {
-      setAppState("pending_approval");
+      setAppState("blocked");
+      setAccountStatus("pending_approval");
     }
   }, []);
 
@@ -65,24 +73,28 @@ export default function App() {
 
         {appState === "auth" ? (
           <Route path="*" element={<LoginPage />} />
-        ) : appState === "pending_email" ? (
+        ) : appState === "email_pending" ? (
           <Route
             path="*"
             element={
               <PendingEmailPage
                 email={user?.email ?? ""}
-                onVerified={() => setAppState("pending_approval")}
+                onVerified={() => {
+                  setAccountStatus("pending_approval");
+                  setAppState("blocked");
+                }}
               />
             }
           />
-        ) : appState === "pending_approval" ? (
-          <Route path="*" element={<PendingApprovalPage />} />
+        ) : appState === "blocked" ? (
+          <Route path="*" element={<BlockedStatusPage status={accountStatus} />} />
         ) : (
           <Route element={<Layout user={user!} />}>
             <Route path="/" element={<ProjectHubPage />} />
             <Route path="/turmas/nova" element={<ClassWizardPage />} />
             <Route path="/turmas/:id/editar" element={<ClassWizardPage />} />
             <Route path="/contas" element={<AccountsPage />} />
+            <Route path="/contas/:uid" element={<AccountDetailPage />} />
             <Route path="/contas/nova" element={<CreateAccountPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
