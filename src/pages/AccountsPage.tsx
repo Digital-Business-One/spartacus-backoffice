@@ -4,6 +4,7 @@ export function AccountsPage() {
   return (
     <>
       <div className="page-header">
+        <Link to="/" className="back-link">← Voltar ao projeto</Link>
         <h2>Contas</h2>
         <p>Contas pendentes de aprovação</p>
         <div className="page-actions">

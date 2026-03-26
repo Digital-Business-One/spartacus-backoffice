@@ -13,10 +13,9 @@ import { CreateAccountPage } from "./pages/CreateAccountPage";
 import { PendingEmailPage } from "./pages/PendingEmailPage";
 import { PendingApprovalPage } from "./pages/PendingApprovalPage";
 import { Layout } from "./components/Layout";
+import { ProjectHubPage } from "./pages/ProjectHubPage";
+import { ClassWizardPage } from "./pages/ClassWizardPage";
 import { AccountsPage } from "./pages/AccountsPage";
-import { StudentsPage } from "./pages/StudentsPage";
-import { MethodologyPage } from "./pages/MethodologyPage";
-import { CalendarPage } from "./pages/CalendarPage";
 
 type AppState = "loading" | "auth" | "pending_email" | "pending_approval" | "approved";
 
@@ -80,12 +79,12 @@ export default function App() {
           <Route path="*" element={<PendingApprovalPage />} />
         ) : (
           <Route element={<Layout user={user!} />}>
+            <Route path="/" element={<ProjectHubPage />} />
+            <Route path="/turmas/nova" element={<ClassWizardPage />} />
+            <Route path="/turmas/:id/editar" element={<ClassWizardPage />} />
             <Route path="/contas" element={<AccountsPage />} />
             <Route path="/contas/nova" element={<CreateAccountPage />} />
-            <Route path="/alunos" element={<StudentsPage />} />
-            <Route path="/metodologia" element={<MethodologyPage />} />
-            <Route path="/calendario" element={<CalendarPage />} />
-            <Route path="*" element={<Navigate to="/contas" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         )}
       </Routes>
