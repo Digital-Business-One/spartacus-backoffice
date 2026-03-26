@@ -32,6 +32,7 @@ export function TopBar({ user, projectName }: TopBarProps) {
   return (
     <header className="topbar">
       <div className="topbar-brand">
+        <img src="/logo.png" alt="Spartacus" className="logo-circle--sm" />
         <span className="topbar-logo">Spartacus</span>
       </div>
 

@@ -299,17 +299,19 @@ export function CreateAccountPage() {
   }
 
   return (
-    <>
-      <div className="page-header">
-        <h2>Nova Conta</h2>
-        <p>{visibleSteps[step] ?? ""}</p>
-      </div>
+    <div className="signup-page">
+      <div className="signup-content">
+        <div className="page-header" style={{ textAlign: "center" }}>
+          <img src="/logo.png" alt="Spartacus" className="logo-circle" style={{ margin: "0 auto 0.75rem", display: "block" }} />
+          <h2>Nova Conta</h2>
+          <p>{visibleSteps[step] ?? ""}</p>
+        </div>
 
-      <div className="wizard-container">
-        <div className="wizard-steps">
-          {visibleSteps.map((_, i) => (
-            <div key={i} className={`wizard-step ${i < step ? "done" : ""} ${i === step ? "active" : ""}`} />
-          ))}
+        <div className="wizard-container">
+          <div className="wizard-steps">
+            {visibleSteps.map((_, i) => (
+              <div key={i} className={`wizard-step ${i < step ? "done" : ""} ${i === step ? "active" : ""}`} />
+            ))}
         </div>
 
         <div className="wizard-card">
@@ -330,7 +332,8 @@ export function CreateAccountPage() {
           {visibleSteps[step] === "Revisão" && <StepReview data={data} loading={loading} error={error} onSubmit={handleSubmit} back={back} />}
         </div>
       </div>
-    </>
+      </div>
+    </div>
   );
 }
 

@@ -16,6 +16,22 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@600;700&display=swap');
 
+/* ── Logo circle (reusable) ───────────────────────────────────────────────── */
+
+.logo-circle,
+.logo-circle--sm,
+.logo-circle--lg {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(198,163,78,0.3);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  background: var(--bg-card);
+}
+
+.logo-circle { width: 72px; height: 72px; }
+.logo-circle--sm { width: 40px; height: 40px; }
+.logo-circle--lg { width: 96px; height: 96px; }
+
 * {
   margin: 0;
   padding: 0;
@@ -55,6 +71,7 @@ input, select, button, textarea {
 .topbar-brand {
   display: flex;
   align-items: center;
+  gap: 0.6rem;
 }
 
 .topbar-logo {
@@ -407,16 +424,34 @@ input, select, button, textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-primary);
+  background: url('/bg-login.jpg') center/cover no-repeat fixed;
+  position: relative;
+}
+
+.login-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(11,13,18,0.92) 0%,
+    rgba(11,13,18,0.80) 50%,
+    rgba(198,163,78,0.06) 100%
+  );
 }
 
 .login-card {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 400px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: rgba(22,24,31,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(198,163,78,0.15);
+  border-radius: 16px;
   padding: 2.5rem;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5);
 }
 
 .login-brand {
@@ -589,6 +624,49 @@ input, select, button, textarea {
 }
 
 /* ── Wizard ───────────────────────────────────────────────────────────────── */
+
+/* ── Signup page (public /criar-conta) ─────────────────────────────────────── */
+
+.signup-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: url('/bg-login.jpg') center/cover no-repeat fixed;
+  position: relative;
+  padding: 2rem 1rem;
+}
+
+.signup-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(11,13,18,0.94) 0%,
+    rgba(11,13,18,0.85) 50%,
+    rgba(198,163,78,0.04) 100%
+  );
+}
+
+.signup-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 640px;
+}
+
+.signup-content .wizard-card {
+  background: rgba(22,24,31,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: rgba(198,163,78,0.15);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+}
+
+.signup-content .page-header h2 {
+  color: var(--gold);
+}
 
 .wizard-container {
   max-width: 640px;
