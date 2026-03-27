@@ -116,7 +116,7 @@ export function ClassWizardPage() {
       } else {
         await createClass(payload);
       }
-      navigate("/");
+      navigate("/configuracoes");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro ao salvar turma.");
     } finally {
@@ -140,7 +140,7 @@ export function ClassWizardPage() {
 
         <div className="wizard-card">
           {step === 0 && (
-            <StepIdentificacao form={form} update={update} next={next} back={() => navigate("/")} nameRef={nameRef} />
+            <StepIdentificacao form={form} update={update} next={next} back={() => navigate("/configuracoes")} nameRef={nameRef} />
           )}
           {step === 1 && (
             <StepAgenda form={form} update={update} next={next} back={back} />

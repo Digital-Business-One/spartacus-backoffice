@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
+import { usePagination } from "../hooks/usePagination";
 
 interface AccountAction {
   action: string;
@@ -20,6 +21,8 @@ interface Account {
   created_at?: string;
   is_dependent: boolean;
   guardian_uid?: string;
+  class_ids: string[];
+  class_names: string[];
   available_actions: AccountAction[];
 }
 
@@ -47,12 +50,63 @@ const ROLE_LABELS: Record<string, string> = {
   sponsor: "Patrocinador",
 };
 
-type FilterTab = "pending" | "active" | "blocked" | "all";
+// Age helpers
+const AGE_RANGES = [
+  { label: "Kids", min: 0, max: 10 },
+  { label: "Infanto Juvenil", min: 11, max: 17 },
+  { label: "Adulto", min: 18, max: null as number | null },
+];
+
+function calcAge(birthDate?: string): number | null {
+  if (!birthDate) return null;
+  const parts = birthDate.split("/");
+  if (parts.length !== 3) return null;
+  const [d, m, y] = parts.map(Number);
+  if (!d || !m || !y) return null;
+  const dob = new Date(y, m - 1, d);
+  const now = new Date();
+  let age = now.getFullYear() - dob.getFullYear();
+  const md = now.getMonth() - dob.getMonth();
+  if (md < 0 || (md === 0 && now.getDate() < dob.getDate())) age--;
+  return age;
+}
+
+function getAgeRangeLabel(age: number): string {
+  for (const r of AGE_RANGES) {
+    if (age >= r.min && (r.max === null || age <= r.max)) return r.label;
+  }
+  return "";
+}
+
+const CLASS_DISPLAY_ROLES = new Set(["student", "teacher", "instructor"]);
+
+type FilterTab = "email" | "pending" | "anamnese" | "review" | "active" | "blocked" | "all";
+
+// Sub-status options per tab (tabs with multiple statuses)
+const TAB_SUB_STATUSES: Partial<Record<FilterTab, { value: string; label: string }[]>> = {
+  anamnese: [
+    { value: "waiting_medical_history", label: "Aguardando anamnese" },
+    { value: "pending_medical_history_approval", label: "Anamnese em revisão" },
+  ],
+  review: [
+    { value: "waiting_registration_review", label: "Revisão solicitada" },
+    { value: "revised_registration", label: "Cadastro revisado" },
+  ],
+  blocked: [
+    { value: "rejected", label: "Rejeitado" },
+    { value: "expelled", label: "Expulso" },
+    { value: "archived", label: "Arquivado" },
+  ],
+};
+
+const ALL_ROLES = Object.entries(ROLE_LABELS);
 
 export function AccountsPage() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<FilterTab>("pending");
+  const [subStatus, setSubStatus] = useState<string | null>(null);
+  const [roleFilter, setRoleFilter] = useState<string | null>(null);
   const [transitioning, setTransitioning] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -84,22 +138,47 @@ export function AccountsPage() {
   }
 
   const filtered = accounts.filter((a) => {
-    if (tab === "pending") return ["pending_approval", "waiting_email_confirmation", "revised_registration"].includes(a.status);
-    if (tab === "active") return a.status === "approved";
-    if (tab === "blocked") return ["rejected", "expelled", "archived", "waiting_registration_review", "waiting_medical_history", "pending_medical_history_approval"].includes(a.status);
+    // Tab filter
+    let tabMatch = true;
+    if (tab === "email") tabMatch = a.status === "waiting_email_confirmation";
+    else if (tab === "pending") tabMatch = a.status === "pending_approval";
+    else if (tab === "anamnese") tabMatch = ["waiting_medical_history", "pending_medical_history_approval"].includes(a.status);
+    else if (tab === "review") tabMatch = ["waiting_registration_review", "revised_registration"].includes(a.status);
+    else if (tab === "active") tabMatch = a.status === "approved";
+    else if (tab === "blocked") tabMatch = ["rejected", "expelled", "archived"].includes(a.status);
+    if (!tabMatch) return false;
+
+    // Sub-status filter
+    if (subStatus && a.status !== subStatus) return false;
+
+    // Role filter
+    if (roleFilter && !a.roles.includes(roleFilter)) return false;
+
     return true;
   });
 
   const counts = {
-    pending: accounts.filter((a) => ["pending_approval", "waiting_email_confirmation", "revised_registration"].includes(a.status)).length,
+    email: accounts.filter((a) => a.status === "waiting_email_confirmation").length,
+    pending: accounts.filter((a) => a.status === "pending_approval").length,
+    anamnese: accounts.filter((a) => ["waiting_medical_history", "pending_medical_history_approval"].includes(a.status)).length,
+    review: accounts.filter((a) => ["waiting_registration_review", "revised_registration"].includes(a.status)).length,
     active: accounts.filter((a) => a.status === "approved").length,
-    blocked: accounts.filter((a) => !["pending_approval", "waiting_email_confirmation", "revised_registration", "approved"].includes(a.status)).length,
+    blocked: accounts.filter((a) => ["rejected", "expelled", "archived"].includes(a.status)).length,
   };
+
+  const { visible, total, hasMore, loadMore, sentinelRef } = usePagination({ items: filtered });
+
+  function switchTab(t: FilterTab) {
+    setTab(t);
+    setSubStatus(null);
+    setRoleFilter(null);
+  }
+
+  const currentSubStatuses = TAB_SUB_STATUSES[tab] ?? [];
 
   return (
     <>
       <div className="page-header">
-        <Link to="/" className="back-link">← Voltar ao projeto</Link>
         <h2>Contas</h2>
         <p>Gestão de contas e aprovações</p>
         <div className="page-actions">
@@ -108,19 +187,54 @@ export function AccountsPage() {
       </div>
 
       <div className="tab-bar">
-        <button className={`tab-btn ${tab === "pending" ? "active" : ""}`} onClick={() => setTab("pending")}>
+        <button className={`tab-btn ${tab === "email" ? "active" : ""}`} onClick={() => switchTab("email")}>
+          Aguardando e-mail {counts.email > 0 && <span className="tab-badge tab-badge--muted">{counts.email}</span>}
+        </button>
+        <button className={`tab-btn ${tab === "pending" ? "active" : ""}`} onClick={() => switchTab("pending")}>
           Pendentes {counts.pending > 0 && <span className="tab-badge">{counts.pending}</span>}
         </button>
-        <button className={`tab-btn ${tab === "active" ? "active" : ""}`} onClick={() => setTab("active")}>
+        <button className={`tab-btn ${tab === "anamnese" ? "active" : ""}`} onClick={() => switchTab("anamnese")}>
+          Anamnese {counts.anamnese > 0 && <span className="tab-badge tab-badge--warning">{counts.anamnese}</span>}
+        </button>
+        <button className={`tab-btn ${tab === "review" ? "active" : ""}`} onClick={() => switchTab("review")}>
+          Revisão {counts.review > 0 && <span className="tab-badge tab-badge--warning">{counts.review}</span>}
+        </button>
+        <button className={`tab-btn ${tab === "active" ? "active" : ""}`} onClick={() => switchTab("active")}>
           Ativos {counts.active > 0 && <span className="tab-badge tab-badge--success">{counts.active}</span>}
         </button>
-        <button className={`tab-btn ${tab === "blocked" ? "active" : ""}`} onClick={() => setTab("blocked")}>
+        <button className={`tab-btn ${tab === "blocked" ? "active" : ""}`} onClick={() => switchTab("blocked")}>
           Bloqueados {counts.blocked > 0 && <span className="tab-badge tab-badge--muted">{counts.blocked}</span>}
         </button>
-        <button className={`tab-btn ${tab === "all" ? "active" : ""}`} onClick={() => setTab("all")}>
+        <button className={`tab-btn ${tab === "all" ? "active" : ""}`} onClick={() => switchTab("all")}>
           Todos
         </button>
       </div>
+
+      {/* Sub-status + role filters */}
+      {(currentSubStatuses.length > 0 || !loading) && (
+        <div className="filter-bar">
+          {currentSubStatuses.length > 0 && (
+            <div className="filter-group">
+              <span className="filter-label">Status:</span>
+              <button className={`filter-chip ${subStatus === null ? "active" : ""}`} onClick={() => setSubStatus(null)}>Todos</button>
+              {currentSubStatuses.map((s) => (
+                <button key={s.value} className={`filter-chip ${subStatus === s.value ? "active" : ""}`} onClick={() => setSubStatus(subStatus === s.value ? null : s.value)}>
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="filter-group">
+            <span className="filter-label">Perfil:</span>
+            <button className={`filter-chip ${roleFilter === null ? "active" : ""}`} onClick={() => setRoleFilter(null)}>Todos</button>
+            {ALL_ROLES.map(([code, label]) => (
+              <button key={code} className={`filter-chip ${roleFilter === code ? "active" : ""}`} onClick={() => setRoleFilter(roleFilter === code ? null : code)}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="hub-loading">
@@ -138,17 +252,28 @@ export function AccountsPage() {
           </p>
         </div>
       ) : (
-        <div className="account-list">
-          {filtered.map((account) => (
-            <AccountCard
-              key={account.uid}
-              account={account}
-              onAction={(action) => handleTransition(account.uid, action)}
-              onDetail={() => navigate(`/contas/${account.uid}`)}
-              loading={transitioning === account.uid}
-            />
-          ))}
-        </div>
+        <>
+          <div className="account-list">
+            {visible.map((account) => (
+              <AccountCard
+                key={account.uid}
+                account={account}
+                onAction={(action) => handleTransition(account.uid, action)}
+                onDetail={() => navigate(`/contas/${account.uid}`)}
+                loading={transitioning === account.uid}
+              />
+            ))}
+          </div>
+          <div className="pagination-footer">
+            <span className="pagination-count">Exibindo {visible.length} de {total} contas</span>
+            {hasMore && (
+              <button className="btn btn-outline btn-sm" onClick={loadMore} style={{ marginTop: "0.5rem" }}>
+                Ver mais ↓
+              </button>
+            )}
+            <div ref={sentinelRef} />
+          </div>
+        </>
       )}
     </>
   );
@@ -173,6 +298,10 @@ function AccountCard({
     .join("")
     .toUpperCase();
 
+  const showClassInfo = account.roles.some((r) => CLASS_DISPLAY_ROLES.has(r));
+  const age = calcAge(account.birth_date);
+  const ageLabel = age !== null ? getAgeRangeLabel(age) : "";
+
   return (
     <div className="account-card" onClick={onDetail}>
       <div className="account-card-header">
@@ -187,7 +316,17 @@ function AccountCard({
               </span>
             ))}
             {account.is_dependent && <span className="chip" style={{ fontSize: "0.7rem", padding: "0.1rem 0.5rem", background: "rgba(245,158,11,0.15)", color: "#F59E0B" }}>Dependente</span>}
+            {showClassInfo && age !== null && (
+              <span className="chip" style={{ fontSize: "0.7rem", padding: "0.1rem 0.5rem", background: "rgba(76,175,80,0.12)", color: "var(--success)" }}>
+                {age} anos{ageLabel ? ` · ${ageLabel}` : ""}
+              </span>
+            )}
           </div>
+          {showClassInfo && account.class_names.length > 0 && (
+            <div className="account-classes">
+              {account.class_names.join(", ")}
+            </div>
+          )}
         </div>
         <div className="account-status">
           <span className="status-badge" style={{ color: statusInfo.color, borderColor: statusInfo.color }}>
