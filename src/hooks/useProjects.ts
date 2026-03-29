@@ -4,6 +4,7 @@ import { api } from "../lib/api";
 export interface MyProject {
   id: string;
   name: string;
+  city?: string;
   logo_url?: string;
   roles: string[];
 }

@@ -38,7 +38,7 @@ export function ProjectHubPage() {
   }
 
   const pendingCount = accounts.filter((a) =>
-    ["pending_approval", "waiting_email_confirmation"].includes(a.status)
+    a.status === "pending_approval"
   ).length;
   const activeCount = accounts.filter((a) => a.status === "approved").length;
   const anamneseCount = accounts.filter((a) =>

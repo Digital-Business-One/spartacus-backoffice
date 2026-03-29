@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { signOut, type User } from "firebase/auth";
 import { auth } from "../lib/firebase";
 
@@ -47,8 +48,10 @@ export function TopBar({ user, onToggleSidebar }: TopBarProps) {
             <line x1="3" y1="18" x2="21" y2="18" />
           </svg>
         </button>
-        <img src="/logo.png" alt="Spartacus" className="logo-circle--sm" />
-        <span className="topbar-logo">Spartacus</span>
+        <Link to="/" className="topbar-brand-link">
+          <img src="/logo.png" alt="Spartacus" className="logo-circle--sm" />
+          <span className="topbar-logo">Spartacus</span>
+        </Link>
       </div>
 
       {selectedProject && (
@@ -58,10 +61,13 @@ export function TopBar({ user, onToggleSidebar }: TopBarProps) {
             onClick={() => { if (projects.length > 1) setProjectDropdown(!projectDropdown); }}
             style={projects.length <= 1 ? { cursor: "default" } : undefined}
           >
-            <span>{selectedProject.name}</span>
-            {projects.length > 1 && (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
-            )}
+            <div className="project-selector-info">
+              <span className="project-selector-name">{selectedProject.name}</span>
+              {selectedProject.city && (
+                <span className="project-selector-city">{selectedProject.city}</span>
+              )}
+            </div>
+            <svg className="project-selector-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
           </button>
           {projectDropdown && projects.length > 1 && (
             <div className="project-dropdown">
@@ -71,7 +77,10 @@ export function TopBar({ user, onToggleSidebar }: TopBarProps) {
                   className={`project-dropdown-item ${p.id === selectedProject.id ? "selected" : ""}`}
                   onClick={() => { selectProject(p.id); setProjectDropdown(false); }}
                 >
-                  <span>{p.name}</span>
+                  <div className="project-dropdown-item-info">
+                    <span className="project-dropdown-item-name">{p.name}</span>
+                    {p.city && <span className="project-dropdown-item-city">{p.city}</span>}
+                  </div>
                   {p.id === selectedProject.id && <span className="project-dropdown-check">✓</span>}
                 </button>
               ))}

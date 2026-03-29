@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 interface UsePaginationOptions<T> {
   items: T[];
   pageSize?: number;
+  loadSize?: number;
 }
 
 interface UsePaginationReturn<T> {
@@ -13,7 +14,11 @@ interface UsePaginationReturn<T> {
   sentinelRef: React.RefObject<HTMLDivElement>;
 }
 
-export function usePagination<T>({ items, pageSize = 20 }: UsePaginationOptions<T>): UsePaginationReturn<T> {
+export function usePagination<T>({
+  items,
+  pageSize = 9,
+  loadSize = 5,
+}: UsePaginationOptions<T>): UsePaginationReturn<T> {
   const [displayCount, setDisplayCount] = useState(pageSize);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -23,8 +28,8 @@ export function usePagination<T>({ items, pageSize = 20 }: UsePaginationOptions<
   }, [items.length, pageSize]);
 
   const loadMore = useCallback(() => {
-    setDisplayCount((prev) => Math.min(prev + pageSize, items.length));
-  }, [pageSize, items.length]);
+    setDisplayCount((prev) => Math.min(prev + loadSize, items.length));
+  }, [loadSize, items.length]);
 
   // IntersectionObserver for auto-load
   useEffect(() => {

@@ -16,12 +16,18 @@ import { Layout } from "./components/Layout";
 import { ProjectHubPage } from "./pages/ProjectHubPage";
 import { AccountsPage } from "./pages/AccountsPage";
 import { AccountDetailPage } from "./pages/AccountDetailPage";
+import { BlockedAccountsPage } from "./pages/BlockedAccountsPage";
 import { StudentsPage } from "./pages/StudentsPage";
+import { TeachersPage } from "./pages/TeachersPage";
+import { InstructorsPage } from "./pages/InstructorsPage";
+import { SupportPage } from "./pages/SupportPage";
+import { EvaluationPage } from "./pages/EvaluationPage";
+import { CalendarPage } from "./pages/CalendarPage";
+import { EventsPage } from "./pages/EventsPage";
+import { AulasPage } from "./pages/AulasPage";
+import { ReportsPage } from "./pages/ReportsPage";
 import { ProjectSettingsPage } from "./pages/ProjectSettingsPage";
 import { ClassWizardPage } from "./pages/ClassWizardPage";
-
-const APPROVED_STATE = "approved";
-const EMAIL_PENDING = "waiting_email_confirmation";
 
 type AppState = "loading" | "auth" | "email_pending" | "blocked" | "approved";
 
@@ -35,12 +41,16 @@ export default function App() {
       const res = await api.get<{ approvalStatus: string }>("/auth/me");
       const status = res.approvalStatus;
       setAccountStatus(status);
-      if (status === APPROVED_STATE) {
+      if (status === "approved") {
         setAppState("approved");
-      } else if (status === EMAIL_PENDING) {
-        setAppState("email_pending");
       } else {
-        setAppState("blocked");
+        // Account exists but not approved — check if email needs verification
+        const fbUser = auth.currentUser;
+        if (fbUser && !fbUser.emailVerified && fbUser.providerData[0]?.providerId === "password") {
+          setAppState("email_pending");
+        } else {
+          setAppState("blocked");
+        }
       }
     } catch {
       setAppState("blocked");
@@ -93,10 +103,23 @@ export default function App() {
         ) : (
           <Route element={<Layout user={user!} />}>
             <Route path="/" element={<ProjectHubPage />} />
-            <Route path="/contas" element={<AccountsPage />} />
+            {/* Contas */}
+            <Route path="/em-analise" element={<AccountsPage />} />
             <Route path="/contas/:uid" element={<AccountDetailPage />} />
-            <Route path="/contas/nova" element={<CreateAccountPage />} />
+            <Route path="/bloqueados" element={<BlockedAccountsPage />} />
             <Route path="/alunos" element={<StudentsPage />} />
+            <Route path="/professores" element={<TeachersPage />} />
+            <Route path="/instrutores" element={<InstructorsPage />} />
+            <Route path="/apoio" element={<SupportPage />} />
+            {/* Redirect antigo /contas → /em-analise */}
+            <Route path="/contas" element={<Navigate to="/em-analise" replace />} />
+            {/* Módulos */}
+            <Route path="/avaliacao" element={<EvaluationPage />} />
+            <Route path="/calendario" element={<CalendarPage />} />
+            <Route path="/eventos" element={<EventsPage />} />
+            <Route path="/aulas" element={<AulasPage />} />
+            <Route path="/relatorios" element={<ReportsPage />} />
+            {/* Configurações */}
             <Route path="/configuracoes" element={<ProjectSettingsPage />} />
             <Route path="/configuracoes/turmas/nova" element={<ClassWizardPage />} />
             <Route path="/configuracoes/turmas/:id/editar" element={<ClassWizardPage />} />
