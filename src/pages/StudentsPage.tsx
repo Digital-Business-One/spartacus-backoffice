@@ -153,7 +153,7 @@ function StudentGroupCard({ group }: { group: StudentGroup }) {
             <div className="student-name">{guardian.name}</div>
             <div className="student-meta">{guardian.email}</div>
           </div>
-          <span className="chip" style={{ fontSize: "0.7rem", padding: "0.1rem 0.5rem" }}>
+          <span className="account-role-chip">
             Responsável
           </span>
         </div>
