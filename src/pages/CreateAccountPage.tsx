@@ -121,9 +121,11 @@ async function fetchCEP(cep: string) {
 interface ClassOut {
   id: string;
   name: string;
-  modality: string;
+  modality_id: string;
+  modality_name: string;
   schedule: string;
   teacher?: string;
+  location?: string;
 }
 
 /** Fetch classes from the public endpoint (no auth needed). */
