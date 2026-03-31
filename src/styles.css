@@ -2118,8 +2118,28 @@ input, select, button, textarea {
 }
 
 /* Dependents area inside guardian card */
+.account-dependents-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.2rem 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.account-dependents-toggle:hover .account-dependents-label {
+  color: var(--gold);
+}
+
+.account-dependents-toggle-icon {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  width: 1rem;
+  text-align: center;
+}
+
 .account-dependents-inner {
-  margin: 0.9rem -1.4rem 0;
+  margin: 0.5rem -1.4rem 0;
   padding: 0.85rem 1.1rem 0.85rem 1.4rem;
   background: var(--bg-primary);
   border-top: 1px solid var(--border);
@@ -2133,19 +2153,14 @@ input, select, button, textarea {
   text-transform: uppercase;
   letter-spacing: 0.6px;
   color: var(--text-muted);
-  padding: 0 0 0.6rem 0.5rem;
+  padding: 0;
   display: flex;
   align-items: center;
   gap: 0.4rem;
 }
 
 .account-dependents-label::before {
-  content: "";
-  display: inline-block;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--gold-dim);
+  display: none;
 }
 
 /* Dependent row */
