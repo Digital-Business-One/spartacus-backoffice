@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef, useCallback, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useClasses } from "../hooks/useClasses";
-import { api } from "../lib/api";
-
 const PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID ?? "spartacus-artes-marciais";
 
 interface ModalityData {
