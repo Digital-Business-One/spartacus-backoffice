@@ -460,13 +460,8 @@ function FamilyCard({
             ))}
           </div>
         </div>
-        <div className="account-status">
+        <div className="account-header-right" onClick={(e) => e.stopPropagation()}>
           <span className={`status-badge status-badge--${statusInfo.variant}`}>{statusInfo.label}</span>
-        </div>
-      </div>
-
-      {(primary || secondary.length > 0) && (
-        <div className="account-actions" onClick={(e) => e.stopPropagation()}>
           {primary && (
             <button
               className="account-action-btn account-action-btn--primary"
@@ -485,7 +480,7 @@ function FamilyCard({
             />
           )}
         </div>
-      )}
+      </div>
 
       <div className="account-dependents-inner">
         <div className="account-dependents-label">Dependentes ({dependents.length})</div>
@@ -542,13 +537,8 @@ function AccountCard({
             <div className="account-classes">{account.class_names.join(", ")}</div>
           )}
         </div>
-        <div className="account-status">
+        <div className="account-header-right" onClick={(e) => e.stopPropagation()}>
           <span className={`status-badge status-badge--${statusInfo.variant}`}>{statusInfo.label}</span>
-        </div>
-      </div>
-
-      {(primary || secondary.length > 0) && (
-        <div className="account-actions" onClick={(e) => e.stopPropagation()}>
           {primary && (
             <button
               className="account-action-btn account-action-btn--primary"
@@ -562,7 +552,7 @@ function AccountCard({
             <MoreMenu actions={secondary} onAction={onAction} onDetail={onDetail} disabled={loading} />
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
