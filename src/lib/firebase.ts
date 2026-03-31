@@ -19,8 +19,3 @@ if (authEmulatorUrl) {
 }
 
 export const googleProvider = new GoogleAuthProvider();
-
-// Connect to Auth emulator in development
-if (import.meta.env.DEV) {
-  connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
-}

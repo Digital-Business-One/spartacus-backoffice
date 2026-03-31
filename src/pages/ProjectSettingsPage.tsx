@@ -272,7 +272,7 @@ function TurmasTab({
             <div key={cls.id} className="class-card">
               <div className="class-card-body">
                 <div className="class-card-name">{cls.name}</div>
-                <div className="class-card-info">{cls.modality} · {cls.schedule}</div>
+                <div className="class-card-info">{cls.modality_name} · {cls.schedule}</div>
                 {cls.teacher && <div className="class-card-teacher">Prof. {cls.teacher}</div>}
               </div>
               <div className="class-card-actions" style={{ opacity: 1 }}>

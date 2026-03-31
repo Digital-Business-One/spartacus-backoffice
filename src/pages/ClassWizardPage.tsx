@@ -1,6 +1,15 @@
-import { useState, useEffect, useRef, type FormEvent } from "react";
+import { useState, useEffect, useRef, useCallback, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useClasses } from "../hooks/useClasses";
+import { api } from "../lib/api";
+
+const PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID ?? "spartacus-artes-marciais";
+
+interface ModalityData {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 const DAYS = [
   { code: "mon", label: "Seg" },
@@ -17,11 +26,12 @@ const STEPS = ["Identificação", "Agenda", "Detalhes", "Confirmação"];
 interface ClassForm {
   slug: string;
   name: string;
-  modality: string;
+  modalityId: string;
   days: string[];
   startTime: string;
   endTime: string;
   teacherName: string;
+  location: string;
   ageMin: string;
   ageMax: string;
 }
@@ -29,11 +39,12 @@ interface ClassForm {
 const INITIAL: ClassForm = {
   slug: "",
   name: "",
-  modality: "",
+  modalityId: "",
   days: [],
   startTime: "",
   endTime: "",
   teacherName: "",
+  location: "",
   ageMin: "",
   ageMax: "",
 };
@@ -43,11 +54,24 @@ export function ClassWizardPage() {
   const isEdit = !!id;
   const navigate = useNavigate();
   const { classes, createClass, updateClass } = useClasses();
+  const [modalities, setModalities] = useState<ModalityData[]>([]);
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<ClassForm>(INITIAL);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
+
+  const fetchModalities = useCallback(async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/projects/${PROJECT_ID}/modalities`);
+      if (res.ok) {
+        const data = await res.json();
+        setModalities(data.modalities ?? []);
+      }
+    } catch { /* silent */ }
+  }, []);
+
+  useEffect(() => { fetchModalities(); }, [fetchModalities]);
 
   // Pre-fill form when editing
   useEffect(() => {
@@ -66,11 +90,12 @@ export function ClassWizardPage() {
     setForm({
       slug: cls.id.split("_").slice(1).join("_") || cls.id,
       name: cls.name,
-      modality: cls.modality,
+      modalityId: cls.modality_id,
       days,
       startTime: startTime ?? "",
       endTime: endTime ?? "",
       teacherName: cls.teacher ?? "",
+      location: cls.location ?? "",
       ageMin: cls.age_range?.min?.toString() ?? "",
       ageMax: cls.age_range?.max?.toString() ?? "",
     });
@@ -101,13 +126,14 @@ export function ClassWizardPage() {
       const payload = {
         id: form.slug || generateSlug(form.name),
         name: form.name,
-        modality: form.modality,
-        weekly_schedule: {
-          days: form.days,
+        modality_id: form.modalityId,
+        schedule: form.days.map((d) => ({
+          day: d,
           start_time: form.startTime,
           end_time: form.endTime,
-        },
+        })),
         teacher_name: form.teacherName || undefined,
+        location: form.location || undefined,
         age_range: form.ageMin ? { min: parseInt(form.ageMin), max: form.ageMax ? parseInt(form.ageMax) : undefined } : undefined,
       };
 
@@ -140,7 +166,7 @@ export function ClassWizardPage() {
 
         <div className="wizard-card">
           {step === 0 && (
-            <StepIdentificacao form={form} update={update} next={next} back={() => navigate("/configuracoes")} nameRef={nameRef} />
+            <StepIdentificacao form={form} update={update} next={next} back={() => navigate("/configuracoes")} nameRef={nameRef} modalities={modalities} />
           )}
           {step === 1 && (
             <StepAgenda form={form} update={update} next={next} back={back} />
@@ -149,7 +175,7 @@ export function ClassWizardPage() {
             <StepDetalhes form={form} update={update} next={next} back={back} />
           )}
           {step === 3 && (
-            <StepConfirmacao form={form} loading={loading} error={error} onSubmit={handleSubmit} back={back} isEdit={isEdit} />
+            <StepConfirmacao form={form} loading={loading} error={error} onSubmit={handleSubmit} back={back} isEdit={isEdit} modalities={modalities} />
           )}
         </div>
       </div>
@@ -160,10 +186,10 @@ export function ClassWizardPage() {
 /* ── Step 1: Identificação ─────────────────────────────────────────────────── */
 
 function StepIdentificacao({
-  form, update, next, back, nameRef,
-}: { form: ClassForm; update: (f: Partial<ClassForm>) => void; next: () => void; back: () => void; nameRef: React.RefObject<HTMLInputElement> }) {
+  form, update, next, back, nameRef, modalities,
+}: { form: ClassForm; update: (f: Partial<ClassForm>) => void; next: () => void; back: () => void; nameRef: React.RefObject<HTMLInputElement>; modalities: ModalityData[] }) {
   function handleSubmit(e: FormEvent) { e.preventDefault(); next(); }
-  const canContinue = form.name.trim().length >= 3 && form.modality.trim().length >= 2;
+  const canContinue = form.name.trim().length >= 3 && form.modalityId !== "";
 
   return (
     <form onSubmit={handleSubmit}>
@@ -172,11 +198,16 @@ function StepIdentificacao({
       <div className="wizard-form">
         <div className="form-group">
           <label>Nome da turma</label>
-          <input ref={nameRef} className="form-input" placeholder="Ex: Jiu-Jitsu Kids Matutino" value={form.name} onChange={(e) => update({ name: e.target.value })} required />
+          <input ref={nameRef} className="form-input" placeholder="Ex: Kids Matutino, Adultos" value={form.name} onChange={(e) => update({ name: e.target.value })} required />
         </div>
         <div className="form-group">
           <label>Modalidade</label>
-          <input className="form-input" placeholder="Ex: Jiu-Jitsu, Muay Thai, Capoeira, MMA" value={form.modality} onChange={(e) => update({ modality: e.target.value })} required />
+          <select className="form-input" value={form.modalityId} onChange={(e) => update({ modalityId: e.target.value })} required>
+            <option value="">Selecione a modalidade</option>
+            {modalities.map((m) => (
+              <option key={m.id} value={m.id}>{m.name}</option>
+            ))}
+          </select>
         </div>
       </div>
       <div className="wizard-actions">
@@ -256,6 +287,10 @@ function StepDetalhes({
           <label>Professor (opcional)</label>
           <input className="form-input" placeholder="Nome do professor" value={form.teacherName} onChange={(e) => update({ teacherName: e.target.value })} />
         </div>
+        <div className="form-group">
+          <label>Local (opcional)</label>
+          <input className="form-input" placeholder="Ex: Tatame Principal" value={form.location} onChange={(e) => update({ location: e.target.value })} />
+        </div>
         <div className="wizard-row">
           <div className="form-group">
             <label>Idade mínima (opcional)</label>
@@ -278,11 +313,12 @@ function StepDetalhes({
 /* ── Step 4: Confirmação ───────────────────────────────────────────────────── */
 
 function StepConfirmacao({
-  form, loading, error, onSubmit, back, isEdit,
-}: { form: ClassForm; loading: boolean; error: string | null; onSubmit: () => void; back: () => void; isEdit: boolean }) {
+  form, loading, error, onSubmit, back, isEdit, modalities,
+}: { form: ClassForm; loading: boolean; error: string | null; onSubmit: () => void; back: () => void; isEdit: boolean; modalities: ModalityData[] }) {
   const dayLabels: Record<string, string> = {};
   DAYS.forEach((d) => { dayLabels[d.code] = d.label; });
   const daysFormatted = form.days.map((d) => dayLabels[d] ?? d).join("/");
+  const modalityName = modalities.find((m) => m.id === form.modalityId)?.name ?? form.modalityId;
 
   return (
     <>
@@ -290,7 +326,7 @@ function StepConfirmacao({
       <p>Revise os dados da turma.</p>
       <div className="review-section-card">
         <ReviewRow label="Nome" value={form.name} />
-        <ReviewRow label="Modalidade" value={form.modality} />
+        <ReviewRow label="Modalidade" value={modalityName} />
         <ReviewRow label="Dias" value={daysFormatted} />
         <ReviewRow label="Horário" value={`${form.startTime}–${form.endTime}`} />
         {form.teacherName && <ReviewRow label="Professor" value={form.teacherName} />}
