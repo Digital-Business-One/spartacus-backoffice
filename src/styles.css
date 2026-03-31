@@ -1796,6 +1796,32 @@ input, select, button, textarea {
   border-radius: 14px;
   padding: 1rem 1.25rem;
   margin-bottom: 1.25rem;
+}
+
+/* ── List toolbar (filter+sort row without card styling) ─────────────── */
+
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  margin-bottom: 0.75rem;
+}
+
+.list-toolbar-filters {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.list-toolbar-divider {
+  width: 1px;
+  height: 1.5rem;
+  background: var(--border);
+  flex-shrink: 0;
   box-shadow: var(--shadow-card);
   position: sticky;
   top: 68px;
@@ -1805,7 +1831,7 @@ input, select, button, textarea {
 /* ── Search bar ───────────────────────────────────────────────────────────── */
 
 .search-bar {
-  margin-bottom: 0;
+  margin-bottom: 0.75rem;
 }
 
 .controls-panel .search-bar {

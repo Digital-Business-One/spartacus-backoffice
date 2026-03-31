@@ -282,18 +282,18 @@ export function AccountsPage() {
         </button>
       </div>
 
-      <div className="controls-panel">
-        <div className="search-bar">
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Buscar por nome ou e-mail..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+      <div className="search-bar">
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Buscar por nome ou e-mail..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
 
-        <div className="controls-row">
+      <div className="list-toolbar">
+        <div className="list-toolbar-filters">
           {/* Status filter — only on pending tab */}
           {tab === "pending" && (
             <div className="filter-group">
@@ -334,17 +334,19 @@ export function AccountsPage() {
               />
             </div>
           )}
+        </div>
 
-          {/* Sort */}
-          <div className="filter-group filter-group--right">
-            <span className="filter-label">Ordenar:</span>
-            <button className={`filter-chip ${sortField === "name" ? "active" : ""}`} onClick={() => toggleSort("name")}>
-              Nome {sortField === "name" && (sortDir === "asc" ? "↑" : "↓")}
-            </button>
-            <button className={`filter-chip ${sortField === "age" ? "active" : ""}`} onClick={() => toggleSort("age")}>
-              Idade {sortField === "age" && (sortDir === "asc" ? "↑" : "↓")}
-            </button>
-          </div>
+        <div className="list-toolbar-divider" />
+
+        {/* Sort */}
+        <div className="filter-group">
+          <span className="filter-label">Ordenar:</span>
+          <button className={`filter-chip ${sortField === "name" ? "active" : ""}`} onClick={() => toggleSort("name")}>
+            Nome {sortField === "name" && (sortDir === "asc" ? "↑" : "↓")}
+          </button>
+          <button className={`filter-chip ${sortField === "age" ? "active" : ""}`} onClick={() => toggleSort("age")}>
+            Idade {sortField === "age" && (sortDir === "asc" ? "↑" : "↓")}
+          </button>
         </div>
       </div>
 
