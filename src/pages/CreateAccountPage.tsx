@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, type FormEvent, type ChangeEvent } from "r
 import { Link } from "react-router-dom";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../lib/firebase";
-import { api, ApiError, checkEmail } from "../lib/api";
+import { ApiError, checkEmail } from "../lib/api";
 import { DatePicker } from "../components/DatePicker";
 import { ClassSelector } from "../components/ClassSelector";
 
@@ -19,8 +19,17 @@ interface Dependent {
   classIds: string[];
 }
 
+interface ProjectOption {
+  id: string;
+  name: string;
+  logo_url?: string;
+  city?: string;
+  state?: string;
+}
+
 interface WizardState {
   authMethod: AuthMethod | null;
+  projectId: string;
   email: string;
   password: string;
   passwordConfirm: string;
@@ -44,6 +53,7 @@ interface WizardState {
 
 const INITIAL: WizardState = {
   authMethod: null,
+  projectId: "",
   email: "",
   password: "",
   passwordConfirm: "",
@@ -67,7 +77,6 @@ const INITIAL: WizardState = {
 
 /* ── Constants ─────────────────────────────────────────────────────────────── */
 
-const PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID ?? "spartacus-artes-marciais";
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 const ROLES: { code: Role; label: string; icon: string; desc: string }[] = [
@@ -82,7 +91,7 @@ const ROLES: { code: Role; label: string; icon: string; desc: string }[] = [
 const CLASS_ROLES: Role[] = ["student", "teacher", "instructor"];
 
 const STEPS = [
-  "Método", "Acesso", "Perfil", "Dados Pessoais", "Contato", "Endereço",
+  "Método", "Acesso", "Projeto", "Perfil", "Dados Pessoais", "Contato", "Endereço",
   "Dependentes", "Turmas", "Revisão",
 ];
 
@@ -128,10 +137,22 @@ interface ClassOut {
   location?: string;
 }
 
-/** Fetch classes from the public endpoint (no auth needed). */
-async function fetchClasses(): Promise<ClassOut[]> {
+/** Fetch all projects (public endpoint). */
+async function fetchProjects(): Promise<ProjectOption[]> {
   try {
-    const res = await fetch(`${BASE_URL}/projects/${PROJECT_ID}/classes`);
+    const res = await fetch(`${BASE_URL}/projects`);
+    if (!res.ok) return [];
+    return await res.json();
+  } catch {
+    return [];
+  }
+}
+
+/** Fetch classes for a project (public endpoint). */
+async function fetchClasses(projectId: string): Promise<ClassOut[]> {
+  if (!projectId) return [];
+  try {
+    const res = await fetch(`${BASE_URL}/projects/${projectId}/classes`);
     if (!res.ok) return [];
     const data = await res.json();
     return data.classes ?? [];
@@ -209,7 +230,23 @@ export function CreateAccountPage() {
         })),
         classIds: data.classIds,
       };
-      await api.post("/auth/signup", payload);
+      // Send signup with the selected project context
+      const token = await auth.currentUser?.getIdToken();
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "X-Project-Id": data.projectId,
+      };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const res = await fetch(`${BASE_URL}/auth/signup`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        const detail = typeof body.detail === "string" ? body.detail : `Erro ${res.status}`;
+        throw new ApiError(detail, res.status, body);
+      }
       setSignupComplete(true);
     } catch (err) {
       if (err instanceof ApiError) {
@@ -227,27 +264,34 @@ export function CreateAccountPage() {
   }
 
   if (signupComplete) {
+    const isGoogle = data.authMethod === "google";
     return (
       <div className="login-page">
         <div className="login-card" style={{ maxWidth: 480 }}>
           <div className="login-brand">
-            <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>✉️</div>
-            <h1>E-mail enviado</h1>
-            <p>Confirme seu cadastro</p>
+            <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>{isGoogle ? "✅" : "✉️"}</div>
+            <h1>{isGoogle ? "Cadastro enviado" : "E-mail enviado"}</h1>
+            <p>{isGoogle ? "Aguardando aprovação" : "Confirme seu cadastro"}</p>
           </div>
-          <p style={{ color: "var(--text-muted)", textAlign: "center", lineHeight: 1.6, marginBottom: "0.5rem" }}>
-            Enviamos um link de confirmação para:
-          </p>
-          <p style={{ color: "var(--gold)", textAlign: "center", fontWeight: 600, fontSize: "1.1rem", marginBottom: "1.5rem" }}>
-            {data.email}
-          </p>
+          {!isGoogle && (
+            <>
+              <p style={{ color: "var(--text-muted)", textAlign: "center", lineHeight: 1.6, marginBottom: "0.5rem" }}>
+                Enviamos um link de confirmação para:
+              </p>
+              <p style={{ color: "var(--gold)", textAlign: "center", fontWeight: 600, fontSize: "1.1rem", marginBottom: "1.5rem" }}>
+                {data.email}
+              </p>
+            </>
+          )}
           <div className="notice" style={{ marginBottom: "1.5rem" }}>
             <span>ℹ️</span>
             <span>Sua conta será revisada pela equipe antes da ativação. Você receberá uma notificação assim que aprovada.</span>
           </div>
-          <p style={{ color: "var(--text-muted)", textAlign: "center", lineHeight: 1.6, marginBottom: "1.5rem" }}>
-            Verifique sua caixa de entrada (e o spam) e clique no link para continuar o cadastro.
-          </p>
+          {!isGoogle && (
+            <p style={{ color: "var(--text-muted)", textAlign: "center", lineHeight: 1.6, marginBottom: "1.5rem" }}>
+              Verifique sua caixa de entrada (e o spam) e clique no link para continuar o cadastro.
+            </p>
+          )}
           <Link to="/" className="btn btn-outline" style={{ width: "100%", textAlign: "center" }}>
             Voltar ao login
           </Link>
@@ -257,17 +301,19 @@ export function CreateAccountPage() {
   }
 
   return (
-    <>
-      <div className="page-header">
-        <h2>Nova Conta</h2>
-        <p>{visibleSteps[step] ?? ""}</p>
-      </div>
+    <div className="signup-page">
+      <div className="signup-content">
+        <div className="page-header" style={{ textAlign: "center" }}>
+          <img src="/logo.png" alt="Spartacus" className="logo-circle" style={{ margin: "0 auto 0.75rem", display: "block" }} />
+          <h2>Nova Conta</h2>
+          <p>{visibleSteps[step] ?? ""}</p>
+        </div>
 
-      <div className="wizard-container">
-        <div className="wizard-steps">
-          {visibleSteps.map((_, i) => (
-            <div key={i} className={`wizard-step ${i < step ? "done" : ""} ${i === step ? "active" : ""}`} />
-          ))}
+        <div className="wizard-container">
+          <div className="wizard-steps">
+            {visibleSteps.map((_, i) => (
+              <div key={i} className={`wizard-step ${i < step ? "done" : ""} ${i === step ? "active" : ""}`} />
+            ))}
         </div>
 
         <div className="wizard-card">
@@ -278,6 +324,7 @@ export function CreateAccountPage() {
             }} />
           )}
           {visibleSteps[step] === "Acesso" && <StepCredentials data={data} update={update} next={next} back={back} />}
+          {visibleSteps[step] === "Projeto" && <StepProject data={data} update={update} next={next} back={back} setStep={setStep} visibleSteps={visibleSteps} />}
           {visibleSteps[step] === "Perfil" && <StepProfile data={data} update={update} next={next} back={back} />}
           {visibleSteps[step] === "Dados Pessoais" && <StepPersonal data={data} update={update} next={next} back={back} />}
           {visibleSteps[step] === "Contato" && <StepContact data={data} update={update} next={next} back={back} />}
@@ -287,7 +334,8 @@ export function CreateAccountPage() {
           {visibleSteps[step] === "Revisão" && <StepReview data={data} loading={loading} error={error} onSubmit={handleSubmit} back={back} />}
         </div>
       </div>
-    </>
+      </div>
+    </div>
   );
 }
 
@@ -436,6 +484,93 @@ function StepCredentials({
         <button type="submit" className="btn btn-primary btn-sm" disabled={!canContinue}>Próximo</button>
       </div>
     </form>
+  );
+}
+
+/* ── Step: Project Selection ────────────────────────────────────────────────── */
+
+function StepProject({
+  data, update, next, back, setStep, visibleSteps,
+}: {
+  data: WizardState;
+  update: (f: Partial<WizardState>) => void;
+  next: () => void;
+  back: () => void;
+  setStep: (s: number) => void;
+  visibleSteps: string[];
+}) {
+  const [projects, setProjects] = useState<ProjectOption[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [autoSelected, setAutoSelected] = useState(false);
+
+  useEffect(() => {
+    fetchProjects().then((list) => {
+      setProjects(list);
+      setLoading(false);
+      // Auto-select if single project (ADR-14 §6.3)
+      if (list.length === 1) {
+        update({ projectId: list[0].id });
+        setAutoSelected(true);
+        // Auto-advance after brief delay for visual feedback
+        setTimeout(() => {
+          const nextIdx = visibleSteps.indexOf("Projeto") + 1;
+          setStep(nextIdx);
+        }, 400);
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (loading || autoSelected) {
+    return (
+      <>
+        <h3>Projeto</h3>
+        <p>Selecionando projeto...</p>
+        <div style={{ display: "flex", justifyContent: "center", padding: "2rem" }}>
+          <span className="loading-spinner" style={{ width: 24, height: 24 }} />
+        </div>
+      </>
+    );
+  }
+
+  if (projects.length === 0) {
+    return (
+      <>
+        <h3>Projeto</h3>
+        <p>Nenhum projeto disponível no momento.</p>
+        <div className="wizard-actions">
+          <button type="button" className="btn btn-outline btn-sm" onClick={back}>Voltar</button>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <h3>Projeto</h3>
+      <p>Selecione o projeto para criar sua conta.</p>
+      <div className="class-list">
+        {projects.map((p) => (
+          <div
+            key={p.id}
+            className={`class-card ${data.projectId === p.id ? "selected" : ""}`}
+            onClick={() => update({ projectId: p.id })}
+          >
+            <div className="class-card-body">
+              <div className={`class-card-name ${data.projectId === p.id ? "selected" : ""}`}>{p.name}</div>
+              {p.city && <div className="class-card-info">{p.city}{p.state ? `, ${p.state}` : ""}</div>}
+            </div>
+            <div className={`class-check ${data.projectId === p.id ? "selected" : ""}`}>
+              {data.projectId === p.id && "✓"}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="wizard-actions">
+        <button type="button" className="btn btn-outline btn-sm" onClick={back}>Voltar</button>
+        <button className="btn btn-primary btn-sm" onClick={next} disabled={!data.projectId}>Próximo</button>
+      </div>
+    </>
   );
 }
 
@@ -657,7 +792,7 @@ function StepDependents({
   const nameRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetchClasses().then((c) => { setTurmas(c); setLoadingTurmas(false); });
+    fetchClasses(data.projectId).then((c) => { setTurmas(c); setLoadingTurmas(false); });
   }, []);
 
   useEffect(() => {
@@ -820,7 +955,7 @@ function StepClasses({
   const [loadingTurmas, setLoadingTurmas] = useState(true);
 
   useEffect(() => {
-    fetchClasses().then((c) => { setTurmas(c); setLoadingTurmas(false); });
+    fetchClasses(data.projectId).then((c) => { setTurmas(c); setLoadingTurmas(false); });
   }, []);
 
   function toggleClass(id: string) {

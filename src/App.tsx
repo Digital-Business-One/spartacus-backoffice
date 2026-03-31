@@ -11,31 +11,40 @@ import { api } from "./lib/api";
 import { LoginPage } from "./pages/LoginPage";
 import { CreateAccountPage } from "./pages/CreateAccountPage";
 import { PendingEmailPage } from "./pages/PendingEmailPage";
-import { PendingApprovalPage } from "./pages/PendingApprovalPage";
+import { BlockedStatusPage } from "./pages/BlockedStatusPage";
 import { Layout } from "./components/Layout";
+import { ProjectHubPage } from "./pages/ProjectHubPage";
 import { AccountsPage } from "./pages/AccountsPage";
+import { AccountDetailPage } from "./pages/AccountDetailPage";
 import { StudentsPage } from "./pages/StudentsPage";
-import { MethodologyPage } from "./pages/MethodologyPage";
-import { CalendarPage } from "./pages/CalendarPage";
+import { ProjectSettingsPage } from "./pages/ProjectSettingsPage";
+import { ClassWizardPage } from "./pages/ClassWizardPage";
 
-type AppState = "loading" | "auth" | "pending_email" | "pending_approval" | "approved";
+const APPROVED_STATE = "approved";
+const EMAIL_PENDING = "waiting_email_confirmation";
+
+type AppState = "loading" | "auth" | "email_pending" | "blocked" | "approved";
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [appState, setAppState] = useState<AppState>("loading");
+  const [accountStatus, setAccountStatus] = useState("");
 
   const checkApproval = useCallback(async () => {
     try {
       const res = await api.get<{ approvalStatus: string }>("/auth/me");
-      if (res.approvalStatus === "approved") {
+      const status = res.approvalStatus;
+      setAccountStatus(status);
+      if (status === APPROVED_STATE) {
         setAppState("approved");
-      } else if (res.approvalStatus === "pending_email") {
-        setAppState("pending_email");
+      } else if (status === EMAIL_PENDING) {
+        setAppState("email_pending");
       } else {
-        setAppState("pending_approval");
+        setAppState("blocked");
       }
     } catch {
-      setAppState("pending_approval");
+      setAppState("blocked");
+      setAccountStatus("pending_approval");
     }
   }, []);
 
@@ -66,26 +75,32 @@ export default function App() {
 
         {appState === "auth" ? (
           <Route path="*" element={<LoginPage />} />
-        ) : appState === "pending_email" ? (
+        ) : appState === "email_pending" ? (
           <Route
             path="*"
             element={
               <PendingEmailPage
                 email={user?.email ?? ""}
-                onVerified={() => setAppState("pending_approval")}
+                onVerified={() => {
+                  setAccountStatus("pending_approval");
+                  setAppState("blocked");
+                }}
               />
             }
           />
-        ) : appState === "pending_approval" ? (
-          <Route path="*" element={<PendingApprovalPage />} />
+        ) : appState === "blocked" ? (
+          <Route path="*" element={<BlockedStatusPage status={accountStatus} />} />
         ) : (
           <Route element={<Layout user={user!} />}>
+            <Route path="/" element={<ProjectHubPage />} />
             <Route path="/contas" element={<AccountsPage />} />
+            <Route path="/contas/:uid" element={<AccountDetailPage />} />
             <Route path="/contas/nova" element={<CreateAccountPage />} />
             <Route path="/alunos" element={<StudentsPage />} />
-            <Route path="/metodologia" element={<MethodologyPage />} />
-            <Route path="/calendario" element={<CalendarPage />} />
-            <Route path="*" element={<Navigate to="/contas" replace />} />
+            <Route path="/configuracoes" element={<ProjectSettingsPage />} />
+            <Route path="/configuracoes/turmas/nova" element={<ClassWizardPage />} />
+            <Route path="/configuracoes/turmas/:id/editar" element={<ClassWizardPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         )}
       </Routes>

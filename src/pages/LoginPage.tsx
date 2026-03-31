@@ -40,6 +40,7 @@ export function LoginPage() {
     <div className="login-page">
       <div className="login-card">
         <div className="login-brand">
+          <img src="/logo.png" alt="Spartacus" className="logo-circle--lg" style={{ margin: "0 auto 1rem", display: "block" }} />
           <h1>Spartacus</h1>
           <p>Backoffice</p>
         </div>
