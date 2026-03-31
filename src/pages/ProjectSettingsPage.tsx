@@ -1,15 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProject, type ProjectData } from "../hooks/useProject";
 import { useClasses, type ClassData } from "../hooks/useClasses";
+import { api } from "../lib/api";
 
-type SettingsTab = "cadastro" | "faixas" | "turmas";
+type SettingsTab = "cadastro" | "faixas" | "turmas" | "doacoes";
 
 const TABS: { id: SettingsTab; label: string; icon: string }[] = [
   { id: "cadastro", label: "Cadastro", icon: "🏛️" },
   { id: "faixas", label: "Faixas Etárias", icon: "👶" },
   { id: "turmas", label: "Turmas", icon: "🥋" },
+  { id: "doacoes", label: "Doações", icon: "🎁" },
 ];
+
+interface DonationConfigItem {
+  code: string;
+  label: string;
+  active: boolean;
+}
+
+interface DonationConfig {
+  items: DonationConfigItem[];
+  thankYouMessage: string;
+}
 
 interface AgeRange {
   label: string;
@@ -39,6 +52,9 @@ export function ProjectSettingsPage() {
     }
     if (tab === "turmas") {
       return classes.length > 0 ? "complete" : "incomplete";
+    }
+    if (tab === "doacoes") {
+      return "complete"; // always has defaults
     }
     return "default";
   }
@@ -91,6 +107,7 @@ export function ProjectSettingsPage() {
             onDeactivateClass={deactivateClass}
           />
         )}
+        {activeTab === "doacoes" && <DoacoesTab />}
       </div>
     </>
   );
@@ -384,6 +401,196 @@ function FaixasEtariasTab({
       <div className="notice" style={{ marginTop: "1rem" }}>
         <span>ℹ️</span>
         <span>Deixe "Idade máx." vazio para faixas sem limite superior (ex: Adulto 18+).</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Doações Tab ──────────────────────────────────────────────────────────── */
+
+const PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID ?? "spartacus-artes-marciais";
+
+function DoacoesTab() {
+  const [config, setConfig] = useState<DonationConfig | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [thankYou, setThankYou] = useState("");
+
+  const fetchConfig = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await api.get<DonationConfig>(
+        `/projects/${PROJECT_ID}/donation-config`,
+      );
+      setConfig(data);
+      setThankYou(data.thankYouMessage ?? "");
+    } catch {
+      // use defaults
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchConfig(); }, [fetchConfig]);
+
+  function updateItem(
+    index: number,
+    field: keyof DonationConfigItem,
+    value: string | boolean,
+  ) {
+    if (!config) return;
+    const items = [...config.items];
+    items[index] = { ...items[index], [field]: value };
+    setConfig({ ...config, items });
+  }
+
+  function addItem() {
+    if (!config) return;
+    setConfig({
+      ...config,
+      items: [
+        ...config.items,
+        { code: `custom_${Date.now()}`, label: "", active: true },
+      ],
+    });
+  }
+
+  function removeItem(index: number) {
+    if (!config) return;
+    setConfig({
+      ...config,
+      items: config.items.filter((_, i) => i !== index),
+    });
+  }
+
+  async function handleSave() {
+    if (!config) return;
+    setSaving(true);
+    try {
+      await api.patch(
+        `/projects/${PROJECT_ID}/donation-config`,
+        { items: config.items, thankYouMessage: thankYou },
+      );
+      alert("Configurações de doação salvas!");
+    } catch {
+      alert("Erro ao salvar configurações.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="hub-loading-inline">
+        <span className="loading-spinner" />
+        <span>Carregando configurações de doação...</span>
+      </div>
+    );
+  }
+
+  if (!config) return null;
+
+  return (
+    <div className="settings-panel">
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: "1rem",
+      }}>
+        <h3 className="settings-panel-title" style={{ margin: 0 }}>
+          Itens de Doação
+        </h3>
+      </div>
+      <p style={{
+        color: "var(--text-muted)",
+        fontSize: "0.82rem",
+        marginBottom: "1rem",
+        lineHeight: 1.5,
+      }}>
+        Configure os itens disponíveis para doação mensal no aplicativo.
+        Desative itens para ocultá-los sem excluir.
+      </p>
+
+      <div className="age-range-list">
+        {config.items.map((item, i) => (
+          <div key={item.code} className="age-range-row">
+            <div className="form-group" style={{ flex: 0, minWidth: 36 }}>
+              {i === 0 && <label>Ativo</label>}
+              <label className="toggle-label">
+                <input
+                  type="checkbox"
+                  checked={item.active}
+                  onChange={(e) => updateItem(i, "active", e.target.checked)}
+                />
+              </label>
+            </div>
+            <div className="form-group" style={{ flex: 1, minWidth: 80 }}>
+              {i === 0 && <label>Código</label>}
+              <input
+                className="form-input"
+                value={item.code}
+                onChange={(e) => updateItem(i, "code", e.target.value)}
+                style={{ fontFamily: "monospace", fontSize: "0.8rem" }}
+              />
+            </div>
+            <div className="form-group" style={{ flex: 3 }}>
+              {i === 0 && <label>Descrição exibida no app</label>}
+              <input
+                className="form-input"
+                placeholder="Ex: 1 KG de alimento não perecível"
+                value={item.label}
+                onChange={(e) => updateItem(i, "label", e.target.value)}
+              />
+            </div>
+            <button
+              className="age-range-remove"
+              onClick={() => removeItem(i)}
+              title="Remover"
+              style={i === 0 ? { marginTop: "1.4rem" } : undefined}
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <button
+        className="add-more-btn"
+        onClick={addItem}
+        style={{ marginTop: "0.75rem" }}
+      >
+        <span>+</span> Adicionar item
+      </button>
+
+      <h3 className="settings-panel-title" style={{ marginTop: "1.5rem" }}>
+        Mensagem de Agradecimento
+      </h3>
+      <p style={{
+        color: "var(--text-muted)",
+        fontSize: "0.82rem",
+        marginBottom: "0.75rem",
+        lineHeight: 1.5,
+      }}>
+        Exibida na tela de sucesso do app após o registro da doação.
+      </p>
+      <textarea
+        className="form-input"
+        rows={3}
+        value={thankYou}
+        onChange={(e) => setThankYou(e.target.value)}
+        placeholder="Ex: Muito obrigado pelo seu apoio! Lembre-se de levar a sua doação no próximo treino. Oss!"
+        style={{ resize: "vertical", minHeight: 80 }}
+      />
+
+      <div className="wizard-actions" style={{ marginTop: "1.5rem" }}>
+        <button
+          className="btn btn-primary btn-sm"
+          onClick={handleSave}
+          disabled={saving}
+        >
+          {saving ? "Salvando..." : "Salvar configurações"}
+        </button>
       </div>
     </div>
   );
