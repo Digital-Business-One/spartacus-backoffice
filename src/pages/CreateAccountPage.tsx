@@ -130,9 +130,11 @@ async function fetchCEP(cep: string) {
 interface ClassOut {
   id: string;
   name: string;
-  modality: string;
+  modality_id: string;
+  modality_name: string;
   schedule: string;
   teacher?: string;
+  location?: string;
 }
 
 /** Fetch all projects (public endpoint). */

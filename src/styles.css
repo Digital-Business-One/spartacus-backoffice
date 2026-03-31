@@ -1796,6 +1796,32 @@ input, select, button, textarea {
   border-radius: 14px;
   padding: 1rem 1.25rem;
   margin-bottom: 1.25rem;
+}
+
+/* ── List toolbar (filter+sort row without card styling) ─────────────── */
+
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  margin-bottom: 0.75rem;
+}
+
+.list-toolbar-filters {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.list-toolbar-divider {
+  width: 1px;
+  height: 1.5rem;
+  background: var(--border);
+  flex-shrink: 0;
   box-shadow: var(--shadow-card);
   position: sticky;
   top: 68px;
@@ -1805,7 +1831,7 @@ input, select, button, textarea {
 /* ── Search bar ───────────────────────────────────────────────────────────── */
 
 .search-bar {
-  margin-bottom: 0;
+  margin-bottom: 0.75rem;
 }
 
 .controls-panel .search-bar {
@@ -2092,8 +2118,28 @@ input, select, button, textarea {
 }
 
 /* Dependents area inside guardian card */
+.account-dependents-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.2rem 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.account-dependents-toggle:hover .account-dependents-label {
+  color: var(--gold);
+}
+
+.account-dependents-toggle-icon {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  width: 1rem;
+  text-align: center;
+}
+
 .account-dependents-inner {
-  margin: 0.9rem -1.4rem 0;
+  margin: 0.5rem -1.4rem 0;
   padding: 0.85rem 1.1rem 0.85rem 1.4rem;
   background: var(--bg-primary);
   border-top: 1px solid var(--border);
@@ -2107,19 +2153,14 @@ input, select, button, textarea {
   text-transform: uppercase;
   letter-spacing: 0.6px;
   color: var(--text-muted);
-  padding: 0 0 0.6rem 0.5rem;
+  padding: 0;
   display: flex;
   align-items: center;
   gap: 0.4rem;
 }
 
 .account-dependents-label::before {
-  content: "";
-  display: inline-block;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--gold-dim);
+  display: none;
 }
 
 /* Dependent row */
@@ -2277,6 +2318,14 @@ input, select, button, textarea {
 
 .account-status { flex-shrink: 0; }
 
+.account-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
 .status-badge {
   font-size: 0.75rem;
   font-weight: 700;
@@ -2297,9 +2346,6 @@ input, select, button, textarea {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
-  margin-top: 0.9rem;
-  padding-top: 0.9rem;
-  border-top: 1px solid var(--border);
 }
 
 .account-action-btn {

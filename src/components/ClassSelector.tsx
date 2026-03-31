@@ -6,9 +6,10 @@
 interface ClassOption {
   id: string;
   name: string;
-  modality: string;
+  modality_name: string;
   schedule: string;
   teacher?: string;
+  location?: string;
 }
 
 interface ClassSelectorProps {
@@ -52,7 +53,7 @@ export function ClassSelector({ classes, loading, selected, onToggle }: ClassSel
           >
             <div className="class-card-body">
               <div className={`class-card-name ${active ? "selected" : ""}`}>{cls.name}</div>
-              <div className="class-card-info">{cls.modality} · {cls.schedule}</div>
+              <div className="class-card-info">{cls.modality_name} · {cls.schedule}</div>
               {cls.teacher && <div className="class-card-teacher">Prof. {cls.teacher}</div>}
             </div>
             <div className={`class-check ${active ? "selected" : ""}`}>

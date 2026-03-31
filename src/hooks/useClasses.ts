@@ -7,9 +7,12 @@ const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 export interface ClassData {
   id: string;
   name: string;
-  modality: string;
+  modality_id: string;
+  modality_name: string;
   schedule: string;
+  schedule_items: { day: string; start_time: string; end_time: string }[];
   teacher?: string;
+  location?: string;
   age_range?: { min: number; max?: number };
   icon_url?: string;
 }
@@ -39,9 +42,10 @@ export function useClasses() {
   const createClass = useCallback(async (data: {
     id: string;
     name: string;
-    modality: string;
-    weekly_schedule: { days: string[]; start_time: string; end_time: string };
+    modality_id: string;
+    schedule: { day: string; start_time: string; end_time: string }[];
     teacher_name?: string;
+    location?: string;
     age_range?: { min: number; max?: number };
   }) => {
     const result = await api.post<ClassData>(`/projects/${PROJECT_ID}/classes`, data);

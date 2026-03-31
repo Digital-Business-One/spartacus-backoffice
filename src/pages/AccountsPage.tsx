@@ -282,18 +282,18 @@ export function AccountsPage() {
         </button>
       </div>
 
-      <div className="controls-panel">
-        <div className="search-bar">
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Buscar por nome ou e-mail..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+      <div className="search-bar">
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Buscar por nome ou e-mail..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
 
-        <div className="controls-row">
+      <div className="list-toolbar">
+        <div className="list-toolbar-filters">
           {/* Status filter — only on pending tab */}
           {tab === "pending" && (
             <div className="filter-group">
@@ -334,17 +334,19 @@ export function AccountsPage() {
               />
             </div>
           )}
+        </div>
 
-          {/* Sort */}
-          <div className="filter-group filter-group--right">
-            <span className="filter-label">Ordenar:</span>
-            <button className={`filter-chip ${sortField === "name" ? "active" : ""}`} onClick={() => toggleSort("name")}>
-              Nome {sortField === "name" && (sortDir === "asc" ? "↑" : "↓")}
-            </button>
-            <button className={`filter-chip ${sortField === "age" ? "active" : ""}`} onClick={() => toggleSort("age")}>
-              Idade {sortField === "age" && (sortDir === "asc" ? "↑" : "↓")}
-            </button>
-          </div>
+        <div className="list-toolbar-divider" />
+
+        {/* Sort */}
+        <div className="filter-group">
+          <span className="filter-label">Ordenar:</span>
+          <button className={`filter-chip ${sortField === "name" ? "active" : ""}`} onClick={() => toggleSort("name")}>
+            Nome {sortField === "name" && (sortDir === "asc" ? "↑" : "↓")}
+          </button>
+          <button className={`filter-chip ${sortField === "age" ? "active" : ""}`} onClick={() => toggleSort("age")}>
+            Idade {sortField === "age" && (sortDir === "asc" ? "↑" : "↓")}
+          </button>
         </div>
       </div>
 
@@ -442,6 +444,7 @@ function FamilyCard({
   onDetail: (uid: string) => void;
   transitioningUid: string | null;
 }) {
+  const [depsOpen, setDepsOpen] = useState(false);
   const statusInfo = STATUS_LABELS[guardian.status] ?? { label: guardian.status, variant: "muted" };
   const initials = guardian.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
   const primary = guardian.available_actions.find((a) => PRIMARY_ACTIONS.has(a.action));
@@ -460,13 +463,8 @@ function FamilyCard({
             ))}
           </div>
         </div>
-        <div className="account-status">
+        <div className="account-header-right" onClick={(e) => e.stopPropagation()}>
           <span className={`status-badge status-badge--${statusInfo.variant}`}>{statusInfo.label}</span>
-        </div>
-      </div>
-
-      {(primary || secondary.length > 0) && (
-        <div className="account-actions" onClick={(e) => e.stopPropagation()}>
           {primary && (
             <button
               className="account-action-btn account-action-btn--primary"
@@ -485,20 +483,29 @@ function FamilyCard({
             />
           )}
         </div>
-      )}
-
-      <div className="account-dependents-inner">
-        <div className="account-dependents-label">Dependentes ({dependents.length})</div>
-        {dependents.map((dep) => (
-          <DepRow
-            key={dep.uid}
-            account={dep}
-            onAction={(a) => onAction(dep.uid, a)}
-            onDetail={() => onDetail(dep.uid)}
-            loading={transitioningUid === dep.uid}
-          />
-        ))}
       </div>
+
+      <div
+        className="account-dependents-toggle"
+        onClick={() => setDepsOpen((v) => !v)}
+      >
+        <span className="account-dependents-toggle-icon">{depsOpen ? "▾" : "▸"}</span>
+        <span className="account-dependents-label">Dependentes ({dependents.length})</span>
+      </div>
+
+      {depsOpen && (
+        <div className="account-dependents-inner">
+          {dependents.map((dep) => (
+            <DepRow
+              key={dep.uid}
+              account={dep}
+              onAction={(a) => onAction(dep.uid, a)}
+              onDetail={() => onDetail(dep.uid)}
+              loading={transitioningUid === dep.uid}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -542,13 +549,8 @@ function AccountCard({
             <div className="account-classes">{account.class_names.join(", ")}</div>
           )}
         </div>
-        <div className="account-status">
+        <div className="account-header-right" onClick={(e) => e.stopPropagation()}>
           <span className={`status-badge status-badge--${statusInfo.variant}`}>{statusInfo.label}</span>
-        </div>
-      </div>
-
-      {(primary || secondary.length > 0) && (
-        <div className="account-actions" onClick={(e) => e.stopPropagation()}>
           {primary && (
             <button
               className="account-action-btn account-action-btn--primary"
@@ -562,7 +564,7 @@ function AccountCard({
             <MoreMenu actions={secondary} onAction={onAction} onDetail={onDetail} disabled={loading} />
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

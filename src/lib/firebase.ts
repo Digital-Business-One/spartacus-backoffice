@@ -12,9 +12,10 @@ const firebaseConfig = {
 
 export const firebaseApp = initializeApp(firebaseConfig);
 export const auth = getAuth(firebaseApp);
-export const googleProvider = new GoogleAuthProvider();
 
-// Connect to Auth emulator in development
-if (import.meta.env.DEV) {
-  connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
+const authEmulatorUrl = import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_URL;
+if (authEmulatorUrl) {
+  connectAuthEmulator(auth, authEmulatorUrl, { disableWarnings: true });
 }
+
+export const googleProvider = new GoogleAuthProvider();
