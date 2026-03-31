@@ -3,13 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useProject, type ProjectData } from "../hooks/useProject";
 import { useClasses, type ClassData } from "../hooks/useClasses";
 
-type SettingsTab = "cadastro" | "faixas" | "turmas" | "calendario";
+type SettingsTab = "cadastro" | "faixas" | "turmas";
 
 const TABS: { id: SettingsTab; label: string; icon: string }[] = [
   { id: "cadastro", label: "Cadastro", icon: "🏛️" },
   { id: "faixas", label: "Faixas Etárias", icon: "👶" },
   { id: "turmas", label: "Turmas", icon: "🥋" },
-  { id: "calendario", label: "Calendário", icon: "📅" },
 ];
 
 interface AgeRange {
@@ -91,13 +90,6 @@ export function ProjectSettingsPage() {
             onEditClass={(id) => navigate(`/configuracoes/turmas/${encodeURIComponent(id)}/editar`)}
             onDeactivateClass={deactivateClass}
           />
-        )}
-        {activeTab === "calendario" && (
-          <div className="empty-state">
-            <div className="empty-state-icon">📅</div>
-            <h3>Em desenvolvimento</h3>
-            <p>Visualização de calendário estará disponível em breve.</p>
-          </div>
         )}
       </div>
     </>
