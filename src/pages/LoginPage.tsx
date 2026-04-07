@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -79,6 +80,20 @@ export function LoginPage() {
           >
             {loading ? "Entrando..." : "Entrar"}
           </button>
+
+          <div style={{ textAlign: "center", marginTop: "0.5rem" }}>
+            <Link
+              to="/esqueci-senha"
+              style={{
+                color: "var(--gold)",
+                fontSize: "0.85rem",
+                textDecoration: "none",
+                fontWeight: 500,
+              }}
+            >
+              Esqueceu a senha?
+            </Link>
+          </div>
         </form>
 
         <div className="login-divider">ou</div>
