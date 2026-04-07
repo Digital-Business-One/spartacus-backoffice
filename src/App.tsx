@@ -10,6 +10,9 @@ import { auth } from "./lib/firebase";
 import { api } from "./lib/api";
 import { LoginPage } from "./pages/LoginPage";
 import { CreateAccountPage } from "./pages/CreateAccountPage";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
+import { ResetPasswordPage } from "./pages/ResetPasswordPage";
+import { ChangePasswordPage } from "./pages/ChangePasswordPage";
 import { PendingEmailPage } from "./pages/PendingEmailPage";
 import { BlockedStatusPage } from "./pages/BlockedStatusPage";
 import { Layout } from "./components/Layout";
@@ -80,8 +83,10 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public route — self-registration */}
+        {/* Public routes */}
         <Route path="/criar-conta" element={<CreateAccountPage />} />
+        <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
+        <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
 
         {appState === "auth" ? (
           <Route path="*" element={<LoginPage />} />
@@ -119,6 +124,8 @@ export default function App() {
             <Route path="/eventos" element={<EventsPage />} />
             <Route path="/aulas" element={<AulasPage />} />
             <Route path="/relatorios" element={<ReportsPage />} />
+            {/* Conta */}
+            <Route path="/update-password" element={<ChangePasswordPage />} />
             {/* Configurações */}
             <Route path="/configuracoes" element={<ProjectSettingsPage />} />
             <Route path="/configuracoes/turmas/nova" element={<ClassWizardPage />} />
