@@ -100,7 +100,7 @@ export function TopBar({ user, onToggleSidebar }: TopBarProps) {
               <div className="topbar-menu-email">{user.email}</div>
             </div>
             <Link
-              to="/alterar-senha"
+              to="/update-password"
               className="topbar-menu-item"
               onClick={() => setMenuOpen(false)}
               style={{ display: "block", textDecoration: "none" }}

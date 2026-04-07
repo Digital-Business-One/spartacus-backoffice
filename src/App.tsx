@@ -125,7 +125,7 @@ export default function App() {
             <Route path="/aulas" element={<AulasPage />} />
             <Route path="/relatorios" element={<ReportsPage />} />
             {/* Conta */}
-            <Route path="/alterar-senha" element={<ChangePasswordPage />} />
+            <Route path="/update-password" element={<ChangePasswordPage />} />
             {/* Configurações */}
             <Route path="/configuracoes" element={<ProjectSettingsPage />} />
             <Route path="/configuracoes/turmas/nova" element={<ClassWizardPage />} />
