@@ -2470,6 +2470,345 @@ input, select, button, textarea {
   color: var(--error);
 }
 
+/* ── Account detail header (RFC-12) ───────────────────────────────────────── */
+
+.account-detail-header {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.account-detail-header-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+
+.account-detail-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--gold-muted);
+  border: 2px solid rgba(198, 163, 78, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.account-detail-avatar--photo {
+  object-fit: cover;
+}
+
+.account-detail-identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.account-detail-name {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 0.25rem 0;
+}
+
+.account-detail-email {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0 0 0.6rem 0;
+}
+
+.account-detail-chips {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.account-detail-meta {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.account-detail-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-primary);
+}
+
+.account-detail-meta-item--modality {
+  color: var(--gold);
+  border-color: rgba(198, 163, 78, 0.4);
+  background: rgba(198, 163, 78, 0.08);
+}
+
+.account-detail-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* ── Account detail tabs (RFC-12) ─────────────────────────────────────────── */
+
+.account-detail-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+}
+
+.account-detail-tab {
+  background: none;
+  border: none;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.account-detail-tab:hover {
+  color: var(--text-primary);
+}
+
+.account-detail-tab.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+/* ── Account detail tab content (RFC-12) ──────────────────────────────────── */
+
+.detail-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.detail-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 0.85rem 0;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.85rem;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row-label {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.detail-row-value {
+  color: var(--text-primary);
+  text-align: right;
+  word-break: break-word;
+}
+
+.detail-row-value--muted {
+  color: var(--text-muted);
+}
+
+.detail-verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1rem 0.4rem;
+  background: rgba(46, 184, 92, 0.15);
+  color: var(--success);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-right: 0.4rem;
+}
+
+.detail-guardian-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(198, 163, 78, 0.4);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.detail-guardian-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.detail-guardian-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.detail-guardian-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--gold-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.detail-guardian-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-guardian-name {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.detail-guardian-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.detail-empty-tab {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+}
+
+.detail-map-card {
+  background: var(--bg-card);
+  border: 1px dashed rgba(198, 163, 78, 0.4);
+  border-radius: 8px;
+  padding: 1.25rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.detail-map-icon {
+  font-size: 1.5rem;
+  color: var(--gold);
+}
+
+.detail-map-address {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.detail-map-link {
+  font-size: 0.8rem;
+  color: var(--gold);
+  text-decoration: underline;
+}
+
+.detail-map-link:hover {
+  color: var(--text-primary);
+}
+
+/* ── Graduation badges (RFC-12) ───────────────────────────────────────────── */
+
+.grad-badge-column {
+  display: flex;
+  flex-direction: row;
+  gap: 0.4rem;
+  align-items: flex-start;
+}
+
+.grad-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 28px;
+  padding: 0.35rem 0.2rem 0.4rem;
+  border-radius: 6px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  gap: 0.2rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.grad-badge-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  margin-bottom: 0.2rem;
+}
+
+.grad-badge-letter {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+  letter-spacing: 0.5px;
+}
+
+.grad-badge-belt {
+  width: 100%;
+  height: 6px;
+  border-radius: 1px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  margin: 0.15rem 0;
+}
+
+.grad-badge-degrees {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  min-height: 14px;
+}
+
+.grad-badge-mark {
+  width: 12px;
+  height: 1.5px;
+  background: #fff;
+  border-radius: 1px;
+}
+
 /* ── Settings page ────────────────────────────────────────────────────────── */
 
 .settings-tabs {

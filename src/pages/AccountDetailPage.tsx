@@ -1,131 +1,65 @@
-import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { api } from "../lib/api";
-
-/* ── Types ─────────────────────────────────────────────────────────────────── */
-
-interface AccountAction {
-  action: string;
-  label: string;
-  target_status: string;
-}
-
-interface Address {
-  postal_code?: string;
-  street?: string;
-  number?: string;
-  complement?: string;
-  neighborhood?: string;
-  city?: string;
-  state?: string;
-}
-
-interface Account {
-  uid: string;
-  name: string;
-  email: string;
-  roles: string[];
-  status: string;
-  birth_date?: string;
-  gender?: string;
-  phone?: string;
-  whatsapp?: string;
-  address?: Address;
-  created_at?: string;
-  is_dependent: boolean;
-  guardian_uid?: string;
-  class_ids: string[];
-  class_names: string[];
-  available_actions: AccountAction[];
-}
-
-type DetailTab = "personal" | "contact" | "address" | "classes";
-
-/* ── Constants ─────────────────────────────────────────────────────────────── */
-
-const TABS: { id: DetailTab; label: string }[] = [
-  { id: "personal", label: "Dados Pessoais" },
-  { id: "contact", label: "Contato" },
-  { id: "address", label: "Endereço" },
-  { id: "classes", label: "Turmas" },
-];
-
-const STATUS_DISPLAY: Record<string, { icon: string; label: string }> = {
-  pending_approval: { icon: "⏳", label: "Pendente de aprovação" },
-  waiting_medical_history: { icon: "📋", label: "Aguardando anamnese" },
-  pending_medical_history_approval: { icon: "🔬", label: "Anamnese em revisão" },
-  approved: { icon: "✅", label: "Conta ativa" },
-  rejected: { icon: "❌", label: "Cadastro rejeitado" },
-  expelled: { icon: "🚫", label: "Expulso" },
-  archived: { icon: "📦", label: "Arquivado" },
-  waiting_registration_review: { icon: "✏️", label: "Revisão cadastral solicitada" },
-  revised_registration: { icon: "🔄", label: "Cadastro revisado" },
-};
-
-const ROLE_LABELS: Record<string, string> = {
-  student: "Aluno", guardian: "Responsável", teacher: "Professor",
-  instructor: "Instrutor", owner: "Controlador", assistant: "Assistente",
-  supporter: "Apoiador", sponsor: "Patrocinador",
-};
-
-const AGE_RANGES = [
-  { label: "Kids", min: 0, max: 10 },
-  { label: "Infanto Juvenil", min: 11, max: 17 },
-  { label: "Adulto", min: 18, max: null as number | null },
-];
-
-function calcAge(bd?: string): number | null {
-  if (!bd) return null;
-  const p = bd.split("/");
-  if (p.length !== 3) return null;
-  const [d, m, y] = p.map(Number);
-  if (!d || !m || !y) return null;
-  const dob = new Date(y, m - 1, d);
-  const now = new Date();
-  let age = now.getFullYear() - dob.getFullYear();
-  const md = now.getMonth() - dob.getMonth();
-  if (md < 0 || (md === 0 && now.getDate() < dob.getDate())) age--;
-  return age;
-}
-
-function ageRangeLabel(age: number): string {
-  for (const r of AGE_RANGES) {
-    if (age >= r.min && (r.max === null || age <= r.max)) return r.label;
-  }
-  return "";
-}
-
-/* ── Main Component ────────────────────────────────────────────────────────── */
+import { auth } from "../lib/firebase";
+import { BackLink } from "../components/BackLink";
+import { AccountHeader } from "../components/account/AccountHeader";
+import { AccountTabs } from "../components/account/AccountTabs";
+import {
+  type AccountTabId,
+  DEFAULT_TAB,
+  isTabVisible,
+} from "../components/account/tabsConfig";
+import { AddressTab } from "../components/account/tabs/AddressTab";
+import { PersonalDataTab } from "../components/account/tabs/PersonalDataTab";
+import { PlaceholderTab } from "../components/account/tabs/PlaceholderTab";
+import type { AccountDetail } from "../components/account/types";
+import { useUrlState } from "../hooks/useUrlState";
 
 export function AccountDetailPage() {
   const { uid } = useParams<{ uid: string }>();
-  const [account, setAccount] = useState<Account | null>(null);
+  const [account, setAccount] = useState<AccountDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<DetailTab>("personal");
-  const [acting, setActing] = useState(false);
+  const [notFound, setNotFound] = useState(false);
+  const [tab, setTab] = useUrlState("tab", DEFAULT_TAB);
+  const [suspendLoading, setSuspendLoading] = useState(false);
 
-  useEffect(() => {
+  const fetchAccount = useCallback(async () => {
     if (!uid) return;
     setLoading(true);
-    api.get<Account>(`/accounts/${uid}`)
-      .then(setAccount)
-      .catch(() => setAccount(null))
-      .finally(() => setLoading(false));
+    setNotFound(false);
+    try {
+      const data = await api.get<AccountDetail>(`/accounts/${uid}`);
+      setAccount(data);
+    } catch {
+      setAccount(null);
+      setNotFound(true);
+    } finally {
+      setLoading(false);
+    }
   }, [uid]);
 
-  async function handleAction(action: string) {
+  useEffect(() => {
+    fetchAccount();
+  }, [fetchAccount]);
+
+  const handleSuspend = useCallback(async () => {
     if (!uid) return;
-    setActing(true);
+    const ok = window.confirm(
+      "Suspender esta conta? O usuário perderá acesso ao app.",
+    );
+    if (!ok) return;
+    setSuspendLoading(true);
     try {
-      await api.post(`/accounts/${uid}/transitions`, { action });
-      const updated = await api.get<Account>(`/accounts/${uid}`);
-      setAccount(updated);
+      await api.post(`/accounts/${uid}/transitions`, { action: "expel" });
+      await fetchAccount();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Erro");
+      const message = err instanceof Error ? err.message : "Erro ao suspender";
+      window.alert(message);
     } finally {
-      setActing(false);
+      setSuspendLoading(false);
     }
-  }
+  }, [uid, fetchAccount]);
 
   if (loading) {
     return (
@@ -136,146 +70,89 @@ export function AccountDetailPage() {
     );
   }
 
-  if (!account) {
+  if (notFound || !account) {
     return (
       <>
         <div className="page-header">
-          <Link to="/contas" className="back-link">← Voltar</Link>
+          <BackLink fallback="/em-analise">← Voltar às contas</BackLink>
           <h2>Conta não encontrada</h2>
         </div>
       </>
     );
   }
 
-  const initials = account.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
-  const statusInfo = STATUS_DISPLAY[account.status] ?? { icon: "❓", label: account.status };
+  // If the URL tab is not visible for the current account's roles,
+  // fall back to the default tab.
+  const currentTab = (tab as AccountTabId) || DEFAULT_TAB;
+  const safeTab: AccountTabId = isTabVisible(currentTab, account.roles)
+    ? currentTab
+    : DEFAULT_TAB;
+
+  const isCurrentUser = auth.currentUser?.uid === account.uid;
 
   return (
     <>
       <div className="page-header">
-        <Link to="/contas" className="back-link">← Voltar às contas</Link>
+        <BackLink fallback="/em-analise">← Voltar às contas</BackLink>
       </div>
 
-      {/* Header */}
-      <div className="detail-header">
-        <div className="detail-avatar">{initials}</div>
-        <h2 className="detail-name">{account.name}</h2>
-        <p className="detail-email">{account.email}</p>
-        <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", justifyContent: "center", marginTop: "0.5rem" }}>
-          {account.roles.map((r) => (
-            <span key={r} className="chip">{ROLE_LABELS[r] ?? r}</span>
-          ))}
-          <span className="status-badge" style={{ color: account.status === "approved" ? "var(--success)" : "var(--gold)", borderColor: account.status === "approved" ? "var(--success)" : "var(--gold)" }}>
-            {statusInfo.icon} {statusInfo.label}
-          </span>
-        </div>
-      </div>
+      <AccountHeader
+        account={account}
+        isCurrentUser={isCurrentUser}
+        onSuspend={handleSuspend}
+        suspendLoading={suspendLoading}
+      />
 
-      {/* Action bar */}
-      {account.available_actions.length > 0 && (
-        <div className="detail-action-bar">
-          {account.available_actions.map((a) => (
-            <button
-              key={a.action}
-              className={`btn btn-sm ${a.action === "reject" || a.action === "expel" ? "btn-outline detail-btn--danger" : a.action.startsWith("approve") || a.action === "reactivate" ? "btn-primary" : "btn-outline"}`}
-              onClick={() => handleAction(a.action)}
-              disabled={acting}
-            >
-              {acting ? "..." : a.label}
-            </button>
-          ))}
-        </div>
+      <AccountTabs
+        roles={account.roles}
+        active={safeTab}
+        onChange={(t) => setTab(t)}
+      />
+
+      {safeTab === "dados-pessoais" && <PersonalDataTab account={account} />}
+      {safeTab === "endereco" && <AddressTab account={account} />}
+      {safeTab === "turmas" && (
+        <PlaceholderTab
+          icon="🥋"
+          title="Turmas"
+          message="Em breve — implementação na Fase 4 da RFC-12."
+        />
       )}
-
-      {/* Tabs */}
-      <div className="tab-bar">
-        {TABS.map((t) => (
-          <button key={t.id} className={`tab-btn ${activeTab === t.id ? "active" : ""}`} onClick={() => setActiveTab(t.id)}>
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab content */}
-      <div className="detail-tab-content">
-        {activeTab === "personal" && <PersonalTab account={account} />}
-        {activeTab === "contact" && <ContactTab account={account} />}
-        {activeTab === "address" && <AddressTab account={account} />}
-        {activeTab === "classes" && <ClassesTab account={account} />}
-      </div>
+      {safeTab === "anamnese" && (
+        <PlaceholderTab
+          icon="📋"
+          title="Anamnese"
+          message="Em breve — implementação na Fase 4 da RFC-12."
+        />
+      )}
+      {safeTab === "frequencia" && (
+        <PlaceholderTab
+          icon="📅"
+          title="Frequência"
+          message="Em breve — implementação na Fase 4 da RFC-12."
+        />
+      )}
+      {safeTab === "doacoes" && (
+        <PlaceholderTab
+          icon="💝"
+          title="Doações"
+          message="Em breve — implementação na Fase 4 da RFC-12."
+        />
+      )}
+      {safeTab === "dependentes" && (
+        <PlaceholderTab
+          icon="👨‍👩‍👧"
+          title="Dependentes"
+          message="Em breve — implementação na Fase 4 da RFC-12."
+        />
+      )}
+      {safeTab === "historico" && (
+        <PlaceholderTab
+          icon="🕒"
+          title="Histórico"
+          message="Em breve — implementação na Fase 5 da RFC-12."
+        />
+      )}
     </>
-  );
-}
-
-/* ── Tab components ────────────────────────────────────────────────────────── */
-
-function PersonalTab({ account }: { account: Account }) {
-  const age = calcAge(account.birth_date);
-  const range = age !== null ? ageRangeLabel(age) : "";
-  return (
-    <div className="review-section-card">
-      <Row label="Nome" value={account.name} />
-      <Row label="E-mail" value={account.email} />
-      <Row label="Nascimento" value={account.birth_date} />
-      <Row label="Gênero" value={account.gender === "male" ? "Masculino" : account.gender === "female" ? "Feminino" : undefined} />
-      {age !== null && <Row label="Idade" value={`${age} anos`} />}
-      {range && <Row label="Faixa etária" value={range} />}
-      <Row label="Cadastro" value={account.created_at?.split("T")[0]} />
-      {account.is_dependent && <Row label="Dependente" value="Sim" />}
-      {account.guardian_uid && <Row label="Responsável (UID)" value={account.guardian_uid} />}
-    </div>
-  );
-}
-
-function ContactTab({ account }: { account: Account }) {
-  return (
-    <div className="review-section-card">
-      <Row label="Celular" value={account.phone} />
-      <Row label="WhatsApp" value={account.whatsapp} />
-    </div>
-  );
-}
-
-function AddressTab({ account }: { account: Account }) {
-  const a = account.address;
-  return (
-    <div className="review-section-card">
-      <Row label="CEP" value={a?.postal_code} />
-      <Row label="Logradouro" value={a?.street} />
-      <Row label="Número" value={a?.number} />
-      <Row label="Complemento" value={a?.complement} />
-      <Row label="Bairro" value={a?.neighborhood} />
-      <Row label="Cidade" value={a?.city} />
-      <Row label="UF" value={a?.state} />
-    </div>
-  );
-}
-
-function ClassesTab({ account }: { account: Account }) {
-  if (account.class_names.length === 0) {
-    return (
-      <div className="hub-empty" style={{ padding: "2rem" }}>
-        <div style={{ fontSize: "1.5rem" }}>🥋</div>
-        <p>Nenhuma turma vinculada</p>
-      </div>
-    );
-  }
-  return (
-    <div className="review-section-card">
-      {account.class_names.map((name, i) => (
-        <Row key={i} label={`Turma ${i + 1}`} value={name} />
-      ))}
-    </div>
-  );
-}
-
-/* ── Shared ────────────────────────────────────────────────────────────────── */
-
-function Row({ label, value }: { label: string; value?: string | null }) {
-  return (
-    <div className="review-row">
-      <span className="review-row-label">{label}</span>
-      <span className="review-row-value">{value || "—"}</span>
-    </div>
   );
 }
