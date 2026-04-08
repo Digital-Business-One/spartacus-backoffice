@@ -3,29 +3,29 @@
  *
  * Visibility per role:
  *
- * | Aba           | Aluno | Resp. | Prof. | Instr. | Owner | Asst. | Apoi. | Patr. |
- * |---------------|-------|-------|-------|--------|-------|-------|-------|-------|
- * | DadosPessoais |   ✓   |   ✓   |   ✓   |   ✓    |   ✓   |   ✓   |   ✓   |   ✓   |
- * | Endereço      |   ✓   |   ✓   |   ✓   |   ✓    |   ✓   |   ✓   |   ✓   |   ✓   |
- * | Turmas        |   ✓   |   —   |   —   |   —    |   —   |   —   |   —   |   —   |
- * | Anamnese      |   ✓   |   —   |   —   |   —    |   —   |   —   |   —   |   —   |
- * | Frequência    |   ✓   |   —   |   —   |   —    |   —   |   —   |   —   |   —   |
- * | Doações       |   ✓   |   ✓   |   ✓   |   ✓    |   ✓   |   ✓   |   ✓   |   ✓   |
- * | Dependentes   |   —   |   ✓   |   —   |   —    |   —   |   —   |   —   |   —   |
- * | Histórico     |   ✓   |   ✓   |   ✓   |   ✓    |   ✓   |   ✓   |   ✓   |   ✓   |
+ * | Tab            | Stud. | Guard. | Teach. | Instr. | Owner | Asst. | Supp. | Spons. |
+ * |----------------|-------|--------|--------|--------|-------|-------|-------|--------|
+ * | personal-data  |   ✓   |   ✓    |   ✓    |   ✓    |   ✓   |   ✓   |   ✓   |   ✓    |
+ * | address        |   ✓   |   ✓    |   ✓    |   ✓    |   ✓   |   ✓   |   ✓   |   ✓    |
+ * | classes        |   ✓   |   —    |   —    |   —    |   —   |   —   |   —   |   —    |
+ * | medical-history|   ✓   |   —    |   —    |   —    |   —   |   —   |   —   |   —    |
+ * | attendance     |   ✓   |   —    |   —    |   —    |   —   |   —   |   —   |   —    |
+ * | donations      |   ✓   |   ✓    |   ✓    |   ✓    |   ✓   |   ✓   |   ✓   |   ✓    |
+ * | dependents     |   —   |   ✓    |   —    |   —    |   —   |   —   |   —   |   —    |
+ * | history        |   ✓   |   ✓    |   ✓    |   ✓    |   ✓   |   ✓   |   ✓   |   ✓    |
  *
  * Order is fixed; non-applicable tabs are omitted (not disabled).
  */
 
 export type AccountTabId =
-  | "dados-pessoais"
-  | "endereco"
-  | "turmas"
-  | "anamnese"
-  | "frequencia"
-  | "doacoes"
-  | "dependentes"
-  | "historico";
+  | "personal-data"
+  | "address"
+  | "classes"
+  | "medical-history"
+  | "attendance"
+  | "donations"
+  | "dependents"
+  | "history";
 
 export interface TabSpec {
   id: AccountTabId;
@@ -39,17 +39,17 @@ const HAS_STUDENT = (r: Set<string>) => r.has("student");
 const HAS_GUARDIAN = (r: Set<string>) => r.has("guardian");
 
 const TABS: TabSpec[] = [
-  { id: "dados-pessoais", label: "Dados Pessoais", isVisible: ALL },
-  { id: "endereco", label: "Endereço", isVisible: ALL },
-  { id: "turmas", label: "Turmas", isVisible: HAS_STUDENT },
-  { id: "anamnese", label: "Anamnese", isVisible: HAS_STUDENT },
-  { id: "frequencia", label: "Frequência", isVisible: HAS_STUDENT },
-  { id: "doacoes", label: "Doações", isVisible: ALL },
-  { id: "dependentes", label: "Dependentes", isVisible: HAS_GUARDIAN },
-  { id: "historico", label: "Histórico", isVisible: ALL },
+  { id: "personal-data", label: "Dados Pessoais", isVisible: ALL },
+  { id: "address", label: "Endereço", isVisible: ALL },
+  { id: "classes", label: "Turmas", isVisible: HAS_STUDENT },
+  { id: "medical-history", label: "Anamnese", isVisible: HAS_STUDENT },
+  { id: "attendance", label: "Frequência", isVisible: HAS_STUDENT },
+  { id: "donations", label: "Doações", isVisible: ALL },
+  { id: "dependents", label: "Dependentes", isVisible: HAS_GUARDIAN },
+  { id: "history", label: "Histórico", isVisible: ALL },
 ];
 
-export const DEFAULT_TAB: AccountTabId = "dados-pessoais";
+export const DEFAULT_TAB: AccountTabId = "personal-data";
 
 /** Returns the visible tabs for a given set of roles. */
 export function visibleTabsForRoles(roles: string[]): TabSpec[] {

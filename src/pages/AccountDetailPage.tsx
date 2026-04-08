@@ -11,8 +11,13 @@ import {
   isTabVisible,
 } from "../components/account/tabsConfig";
 import { AddressTab } from "../components/account/tabs/AddressTab";
+import { AttendanceTab } from "../components/account/tabs/AttendanceTab";
+import { ClassesTab } from "../components/account/tabs/ClassesTab";
+import { DependentsTab } from "../components/account/tabs/DependentsTab";
+import { DonationsTab } from "../components/account/tabs/DonationsTab";
+import { HistoryTab } from "../components/account/tabs/HistoryTab";
+import { MedicalHistoryTab } from "../components/account/tabs/MedicalHistoryTab";
 import { PersonalDataTab } from "../components/account/tabs/PersonalDataTab";
-import { PlaceholderTab } from "../components/account/tabs/PlaceholderTab";
 import type { AccountDetail } from "../components/account/types";
 import { useUrlState } from "../hooks/useUrlState";
 
@@ -109,50 +114,14 @@ export function AccountDetailPage() {
         onChange={(t) => setTab(t)}
       />
 
-      {safeTab === "dados-pessoais" && <PersonalDataTab account={account} />}
-      {safeTab === "endereco" && <AddressTab account={account} />}
-      {safeTab === "turmas" && (
-        <PlaceholderTab
-          icon="🥋"
-          title="Turmas"
-          message="Em breve — implementação na Fase 4 da RFC-12."
-        />
-      )}
-      {safeTab === "anamnese" && (
-        <PlaceholderTab
-          icon="📋"
-          title="Anamnese"
-          message="Em breve — implementação na Fase 4 da RFC-12."
-        />
-      )}
-      {safeTab === "frequencia" && (
-        <PlaceholderTab
-          icon="📅"
-          title="Frequência"
-          message="Em breve — implementação na Fase 4 da RFC-12."
-        />
-      )}
-      {safeTab === "doacoes" && (
-        <PlaceholderTab
-          icon="💝"
-          title="Doações"
-          message="Em breve — implementação na Fase 4 da RFC-12."
-        />
-      )}
-      {safeTab === "dependentes" && (
-        <PlaceholderTab
-          icon="👨‍👩‍👧"
-          title="Dependentes"
-          message="Em breve — implementação na Fase 4 da RFC-12."
-        />
-      )}
-      {safeTab === "historico" && (
-        <PlaceholderTab
-          icon="🕒"
-          title="Histórico"
-          message="Em breve — implementação na Fase 5 da RFC-12."
-        />
-      )}
+      {safeTab === "personal-data" && <PersonalDataTab account={account} />}
+      {safeTab === "address" && <AddressTab account={account} />}
+      {safeTab === "classes" && <ClassesTab account={account} />}
+      {safeTab === "medical-history" && <MedicalHistoryTab uid={account.uid} />}
+      {safeTab === "attendance" && <AttendanceTab uid={account.uid} />}
+      {safeTab === "donations" && <DonationsTab uid={account.uid} />}
+      {safeTab === "dependents" && <DependentsTab uid={account.uid} />}
+      {safeTab === "history" && <HistoryTab uid={account.uid} />}
     </>
   );
 }
