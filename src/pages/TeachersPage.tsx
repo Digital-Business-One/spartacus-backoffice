@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { api } from "../lib/api";
-import { usePagination } from "../hooks/usePagination";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Pagination } from "../components/Pagination";
+import { buildDetailHref } from "../lib/buildDetailHref";
+import { useServerPagination } from "../hooks/useServerPagination";
+import { useUrlNumber, useUrlState } from "../hooks/useUrlState";
 
 interface Account {
   uid: string;
@@ -11,28 +12,27 @@ interface Account {
   status: string;
 }
 
+const PAGE_SIZE = 12;
+
 export function TeachersPage() {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useUrlState("q", "");
+  const [page, setPage] = useUrlNumber("page", 1);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const fetchAccounts = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await api.get<Account[]>("/accounts");
-      setAccounts(result.filter((a) =>
-        a.status === "approved" && a.roles.includes("teacher")
-      ));
-    } catch {
-      setAccounts([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const { data, isLoading } = useServerPagination<Account>({
+    endpoint: "/accounts",
+    params: {
+      status: "approved",
+      role: "teacher",
+      search: search || undefined,
+      sort: "name",
+    },
+    page,
+    pageSize: PAGE_SIZE,
+  });
 
-  useEffect(() => { fetchAccounts(); }, [fetchAccounts]);
-
-  const { visible, total, hasMore, loadMore, sentinelRef } = usePagination({ items: accounts });
+  const items = data?.items ?? [];
 
   return (
     <>
@@ -41,12 +41,22 @@ export function TeachersPage() {
         <p>Professores ativos do projeto</p>
       </div>
 
-      {loading ? (
+      <div className="search-bar">
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Buscar por nome..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      {isLoading ? (
         <div className="hub-loading">
           <span className="loading-spinner" style={{ width: 24, height: 24 }} />
           <span>Carregando...</span>
         </div>
-      ) : accounts.length === 0 ? (
+      ) : items.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon">🥋</div>
           <h3>Nenhum professor</h3>
@@ -55,10 +65,19 @@ export function TeachersPage() {
       ) : (
         <>
           <div className="account-list">
-            {visible.map((a) => {
-              const initials = a.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+            {items.map((a) => {
+              const initials = a.name
+                .split(" ")
+                .map((w) => w[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase();
               return (
-                <div key={a.uid} className="account-card" onClick={() => navigate(`/contas/${a.uid}`)}>
+                <div
+                  key={a.uid}
+                  className="account-card"
+                  onClick={() => navigate(buildDetailHref(a.uid, location))}
+                >
                   <div className="account-card-header">
                     <div className="account-avatar">{initials}</div>
                     <div className="account-info">
@@ -73,11 +92,17 @@ export function TeachersPage() {
               );
             })}
           </div>
-          <div className="pagination-footer">
-            <span className="pagination-count">Exibindo {visible.length} de {total}</span>
-            {hasMore && <button className="btn btn-outline btn-sm" onClick={loadMore}>Ver mais ↓</button>}
-            <div ref={sentinelRef} />
-          </div>
+          {data && (
+            <Pagination
+              page={data.page}
+              totalPages={data.totalPages}
+              total={data.total}
+              pageSize={data.pageSize}
+              itemLabel="professor"
+              itemLabelPlural="professores"
+              onChange={setPage}
+            />
+          )}
         </>
       )}
     </>

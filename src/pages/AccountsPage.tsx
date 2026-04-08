@@ -1,7 +1,10 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
-import { usePagination } from "../hooks/usePagination";
+import { Pagination } from "../components/Pagination";
+import { buildDetailHref } from "../lib/buildDetailHref";
+import { useServerPagination } from "../hooks/useServerPagination";
+import { useUrlNumber, useUrlState } from "../hooks/useUrlState";
 
 interface AccountAction {
   action: string;
@@ -85,70 +88,57 @@ function getAgeRangeLabel(age: number): string {
 }
 
 type FilterTab = "pending" | "anamnese";
-type SortField = "name" | "age";
-type SortDir = "asc" | "desc";
 
-const TAB_STATUSES: Record<FilterTab, string[]> = {
-  pending: ["pending_approval", "waiting_registration_review", "revised_registration"],
-  anamnese: ["waiting_medical_history", "pending_medical_history_approval"],
+const TAB_STATUS_CSV: Record<FilterTab, string> = {
+  pending: "pending_approval,waiting_registration_review,revised_registration",
+  anamnese: "waiting_medical_history,pending_medical_history_approval",
 };
 
-const PENDING_STATUS_FILTER: { value: string | null; label: string }[] = [
-  { value: null, label: "Todos" },
+const PENDING_STATUS_OPTIONS: { value: string; label: string }[] = [
+  { value: TAB_STATUS_CSV.pending, label: "Todos" },
   { value: "pending_approval", label: "Pendente" },
-  { value: "revision", label: "Em revisão" },
+  { value: "waiting_registration_review,revised_registration", label: "Em revisão" },
 ];
-
-const REVISION_STATUSES = new Set(["waiting_registration_review", "revised_registration"]);
 
 // Visible by default in the profile filter
 const DEFAULT_VISIBLE_ROLES = ["student", "guardian"];
 const ALL_ROLE_ENTRIES = Object.entries(ROLE_LABELS);
 
-// ── Grouping ────────────────────────────────────────────────────────────────
+const PAGE_SIZE = 12;
 
-function buildGroups(filtered: Account[], allAccounts: Account[]): AccountGroup[] {
-  const allMap = new Map(allAccounts.map((a) => [a.uid, a]));
+// ── Grouping (per-page) ─────────────────────────────────────────────────────
+//
+// Within a single page of results, we cluster dependents under their guardian
+// when both happen to be on the same page. With backend pagination, a guardian
+// and dependent may end up on different pages — that's an acceptable tradeoff
+// vs. forcing the backend to group, which would distort the page count.
+
+function buildGroups(accounts: Account[]): AccountGroup[] {
+  const byUid = new Map(accounts.map((a) => [a.uid, a]));
   const depsByGuardian = new Map<string, Account[]>();
-  const standalones: Account[] = [];
-  const guardiansUsed = new Set<string>();
+  const groups: AccountGroup[] = [];
+  const emitted = new Set<string>();
 
-  for (const a of filtered) {
+  // First pass: index dependents by their guardian uid
+  for (const a of accounts) {
     if (a.is_dependent && a.guardian_uid) {
       const list = depsByGuardian.get(a.guardian_uid) ?? [];
       list.push(a);
       depsByGuardian.set(a.guardian_uid, list);
-    } else {
-      standalones.push(a);
     }
   }
 
-  const groups: AccountGroup[] = [];
-  const emitted = new Set<string>();
-
-  for (const a of standalones) {
+  // Second pass: emit guardians (with their deps) and standalone accounts
+  for (const a of accounts) {
+    if (emitted.has(a.uid)) continue;
+    if (a.is_dependent && a.guardian_uid && byUid.has(a.guardian_uid)) {
+      // Will be emitted as a dep of its guardian below
+      continue;
+    }
     const deps = depsByGuardian.get(a.uid) ?? [];
     groups.push({ lead: a, dependents: deps });
     emitted.add(a.uid);
-    deps.forEach((d) => emitted.add(d.uid));
-    if (deps.length > 0) guardiansUsed.add(a.uid);
-  }
-
-  for (const [guardianUid, deps] of depsByGuardian) {
-    if (guardiansUsed.has(guardianUid)) continue;
-    const guardian = allMap.get(guardianUid);
-    if (guardian && !emitted.has(guardian.uid)) {
-      groups.push({ lead: guardian, dependents: deps });
-      emitted.add(guardian.uid);
-      deps.forEach((d) => emitted.add(d.uid));
-    } else {
-      for (const d of deps) {
-        if (!emitted.has(d.uid)) {
-          groups.push({ lead: d, dependents: [] });
-          emitted.add(d.uid);
-        }
-      }
-    }
+    for (const d of deps) emitted.add(d.uid);
   }
 
   return groups;
@@ -157,42 +147,102 @@ function buildGroups(filtered: Account[], allAccounts: Account[]): AccountGroup[
 // ── Page ────────────────────────────────────────────────────────────────────
 
 export function AccountsPage() {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<FilterTab>("pending");
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [roleFilters, setRoleFilters] = useState<Set<string>>(new Set());
+  const [tab, setTab] = useUrlState("tab", "pending");
+  const [statusFilter, setStatusFilter] = useUrlState(
+    "status",
+    TAB_STATUS_CSV.pending,
+  );
+  const [search, setSearch] = useUrlState("q", "");
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+  const [roleFilters, setRoleFilters] = useUrlState("role", "");
   const [moreOpen, setMoreOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [transitioning, setTransitioning] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<SortField>("name");
-  const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [sort, setSort] = useUrlState("sort", "name");
+  const [page, setPage] = useUrlNumber("page", 1);
   const navigate = useNavigate();
+  const location = useLocation();
 
+  const currentTab = (tab as FilterTab) || "pending";
+  const tabStatuses = TAB_STATUS_CSV[currentTab];
+
+  // Effective status filter — defaults to the tab's full set
+  const effectiveStatus = statusFilter || tabStatuses;
+
+  // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);
     return () => clearTimeout(timer);
   }, [search]);
 
-  const fetchAccounts = useCallback(async () => {
-    setLoading(true);
-    try {
-      setAccounts(await api.get<Account[]>("/accounts"));
-    } catch {
-      setAccounts([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // Multi-role filter as Set for UI
+  const roleSet = useMemo(
+    () => new Set(roleFilters ? roleFilters.split(",").filter(Boolean) : []),
+    [roleFilters],
+  );
 
-  useEffect(() => { fetchAccounts(); }, [fetchAccounts]);
+  // Backend currently filters by single role; for multi-role we fetch with
+  // the first selected role and apply the rest in-memory. Single role is the
+  // common case.
+  const primaryRole = roleSet.size > 0 ? roleSet.values().next().value : undefined;
+
+  const { data, isLoading, refetch } = useServerPagination<Account>({
+    endpoint: "/accounts",
+    params: {
+      status: effectiveStatus,
+      role: primaryRole,
+      search: debouncedSearch || undefined,
+      sort,
+    },
+    page,
+    pageSize: PAGE_SIZE,
+  });
+
+  // Apply remaining role filters in-memory (when more than one role chip active)
+  const items = useMemo(() => {
+    const raw = data?.items ?? [];
+    if (roleSet.size <= 1) return raw;
+    return raw.filter((a) => a.roles.some((r) => roleSet.has(r)));
+  }, [data, roleSet]);
+
+  const groups = useMemo(() => buildGroups(items), [items]);
+
+  function switchTab(t: FilterTab) {
+    setTab(t);
+    setStatusFilter(TAB_STATUS_CSV[t]);
+    setRoleFilters("");
+  }
+
+  function toggleRole(code: string, e: React.MouseEvent) {
+    const next = new Set(roleSet);
+    if (e.ctrlKey || e.metaKey) {
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+    } else {
+      if (next.size === 1 && next.has(code)) {
+        next.clear();
+      } else {
+        next.clear();
+        next.add(code);
+      }
+    }
+    setRoleFilters([...next].join(","));
+  }
+
+  function toggleSort(field: "name" | "age") {
+    const ascValue = field;
+    const descValue = `${field}_desc`;
+    if (sort === ascValue) setSort(descValue);
+    else setSort(ascValue);
+  }
+
+  const sortField = sort.replace("_desc", "");
+  const sortDir = sort.endsWith("_desc") ? "desc" : "asc";
 
   async function handleTransition(uid: string, action: string) {
     setTransitioning(uid);
     try {
       await api.post(`/accounts/${uid}/transitions`, { action });
-      await fetchAccounts();
+      await refetch();
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Erro ao executar ação");
     } finally {
@@ -200,71 +250,20 @@ export function AccountsPage() {
     }
   }
 
-  function toggleRole(code: string, e: React.MouseEvent) {
-    if (e.ctrlKey || e.metaKey) {
-      setRoleFilters((prev) => {
-        const next = new Set(prev);
-        if (next.has(code)) next.delete(code); else next.add(code);
-        return next;
-      });
-    } else {
-      setRoleFilters((prev) =>
-        prev.size === 1 && prev.has(code) ? new Set() : new Set([code]),
-      );
-    }
+  function goToDetail(uid: string) {
+    navigate(buildDetailHref(uid, location));
   }
 
-  const statuses = TAB_STATUSES[tab];
-
-  const filtered = useMemo(() =>
-    accounts
-      .filter((a) => {
-        if (!statuses.includes(a.status)) return false;
-        // Status sub-filter on pending tab
-        if (tab === "pending" && statusFilter) {
-          if (statusFilter === "pending_approval" && a.status !== "pending_approval") return false;
-          if (statusFilter === "revision" && !REVISION_STATUSES.has(a.status)) return false;
-        }
-        if (roleFilters.size > 0 && !a.roles.some((r) => roleFilters.has(r))) return false;
-        if (debouncedSearch) {
-          const q = debouncedSearch.toLowerCase();
-          if (!a.name.toLowerCase().includes(q) && !a.email.toLowerCase().includes(q)) return false;
-        }
-        return true;
-      })
-      .sort((a, b) => {
-        const cmp = sortField === "name"
-          ? a.name.localeCompare(b.name, "pt-BR")
-          : (calcAge(a.birth_date) ?? 999) - (calcAge(b.birth_date) ?? 999);
-        return sortDir === "asc" ? cmp : -cmp;
-      }),
-    [accounts, statuses, tab, statusFilter, roleFilters, debouncedSearch, sortField, sortDir],
+  const defaultRoles = ALL_ROLE_ENTRIES.filter(([code]) =>
+    DEFAULT_VISIBLE_ROLES.includes(code),
   );
-
-  const groups = useMemo(() => buildGroups(filtered, accounts), [filtered, accounts]);
-
-  const counts: Record<FilterTab, number> = {
-    pending: accounts.filter((a) => TAB_STATUSES.pending.includes(a.status)).length,
-    anamnese: accounts.filter((a) => TAB_STATUSES.anamnese.includes(a.status)).length,
-  };
-
-  const { visible, total, hasMore, loadMore, sentinelRef } = usePagination({ items: groups });
-
-  function switchTab(t: FilterTab) {
-    setTab(t);
-    setStatusFilter(null);
-    setRoleFilters(new Set());
-  }
-
-  function toggleSort(field: SortField) {
-    if (sortField === field) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setSortField(field); setSortDir("asc"); }
-  }
-
-  const defaultRoles = ALL_ROLE_ENTRIES.filter(([code]) => DEFAULT_VISIBLE_ROLES.includes(code));
-  const extraRoles = ALL_ROLE_ENTRIES.filter(([code]) => !DEFAULT_VISIBLE_ROLES.includes(code));
-  const hiddenActiveCount = [...roleFilters].filter((r) => !DEFAULT_VISIBLE_ROLES.includes(r)).length;
-  const hideRoleFilter = tab === "anamnese";
+  const extraRoles = ALL_ROLE_ENTRIES.filter(
+    ([code]) => !DEFAULT_VISIBLE_ROLES.includes(code),
+  );
+  const hiddenActiveCount = [...roleSet].filter(
+    (r) => !DEFAULT_VISIBLE_ROLES.includes(r),
+  ).length;
+  const hideRoleFilter = currentTab === "anamnese";
 
   return (
     <>
@@ -274,11 +273,17 @@ export function AccountsPage() {
       </div>
 
       <div className="tab-bar">
-        <button className={`tab-btn ${tab === "pending" ? "active" : ""}`} onClick={() => switchTab("pending")}>
-          Pendente {counts.pending > 0 && <span className="tab-badge">{counts.pending}</span>}
+        <button
+          className={`tab-btn ${currentTab === "pending" ? "active" : ""}`}
+          onClick={() => switchTab("pending")}
+        >
+          Pendente
         </button>
-        <button className={`tab-btn ${tab === "anamnese" ? "active" : ""}`} onClick={() => switchTab("anamnese")}>
-          Anamnese {counts.anamnese > 0 && <span className="tab-badge tab-badge--warning">{counts.anamnese}</span>}
+        <button
+          className={`tab-btn ${currentTab === "anamnese" ? "active" : ""}`}
+          onClick={() => switchTab("anamnese")}
+        >
+          Anamnese
         </button>
       </div>
 
@@ -286,7 +291,7 @@ export function AccountsPage() {
         <input
           type="text"
           className="search-input"
-          placeholder="Buscar por nome ou e-mail..."
+          placeholder="Buscar por nome..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -295,14 +300,14 @@ export function AccountsPage() {
       <div className="list-toolbar">
         <div className="list-toolbar-filters">
           {/* Status filter — only on pending tab */}
-          {tab === "pending" && (
+          {currentTab === "pending" && (
             <div className="filter-group">
               <span className="filter-label">Status:</span>
-              {PENDING_STATUS_FILTER.map((s) => (
+              {PENDING_STATUS_OPTIONS.map((s) => (
                 <button
-                  key={s.value ?? "all"}
-                  className={`filter-chip ${statusFilter === s.value ? "active" : ""}`}
-                  onClick={() => setStatusFilter(statusFilter === s.value ? null : s.value)}
+                  key={s.value}
+                  className={`filter-chip ${effectiveStatus === s.value ? "active" : ""}`}
+                  onClick={() => setStatusFilter(s.value)}
                 >
                   {s.label}
                 </button>
@@ -317,7 +322,7 @@ export function AccountsPage() {
               {defaultRoles.map(([code, label]) => (
                 <button
                   key={code}
-                  className={`filter-chip ${roleFilters.has(code) ? "active" : ""}`}
+                  className={`filter-chip ${roleSet.has(code) ? "active" : ""}`}
                   onClick={(e) => toggleRole(code, e)}
                   title="Ctrl+clique para multi-seleção"
                 >
@@ -326,10 +331,12 @@ export function AccountsPage() {
               ))}
               <RoleMoreMenu
                 roles={extraRoles}
-                active={roleFilters}
+                active={roleSet}
                 open={moreOpen}
                 onToggle={() => setMoreOpen((v) => !v)}
-                onSelect={(code, e) => { toggleRole(code, e); }}
+                onSelect={(code, e) => {
+                  toggleRole(code, e);
+                }}
                 hiddenActiveCount={hiddenActiveCount}
               />
             </div>
@@ -341,16 +348,22 @@ export function AccountsPage() {
         {/* Sort */}
         <div className="filter-group">
           <span className="filter-label">Ordenar:</span>
-          <button className={`filter-chip ${sortField === "name" ? "active" : ""}`} onClick={() => toggleSort("name")}>
+          <button
+            className={`filter-chip ${sortField === "name" ? "active" : ""}`}
+            onClick={() => toggleSort("name")}
+          >
             Nome {sortField === "name" && (sortDir === "asc" ? "↑" : "↓")}
           </button>
-          <button className={`filter-chip ${sortField === "age" ? "active" : ""}`} onClick={() => toggleSort("age")}>
+          <button
+            className={`filter-chip ${sortField === "age" ? "active" : ""}`}
+            onClick={() => toggleSort("age")}
+          >
             Idade {sortField === "age" && (sortDir === "asc" ? "↑" : "↓")}
           </button>
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="hub-loading">
           <span className="loading-spinner" style={{ width: 24, height: 24 }} />
           <span>Carregando...</span>
@@ -358,9 +371,9 @@ export function AccountsPage() {
       ) : groups.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon">📋</div>
-          <h3>Nenhuma conta {tab === "pending" ? "pendente" : "encontrada"}</h3>
+          <h3>Nenhuma conta {currentTab === "pending" ? "pendente" : "encontrada"}</h3>
           <p>
-            {tab === "pending"
+            {currentTab === "pending"
               ? "Quando novas contas forem criadas, elas aparecerão aqui."
               : "Nenhuma conta encontrada nesta etapa."}
           </p>
@@ -368,26 +381,28 @@ export function AccountsPage() {
       ) : (
         <>
           <div className="account-list">
-            {visible.map((group, i) => (
+            {groups.map((group, i) => (
               <AccountGroupCard
                 key={group.lead.uid}
                 group={group}
                 index={i}
                 onAction={handleTransition}
-                onDetail={(uid) => navigate(`/contas/${uid}`)}
+                onDetail={goToDetail}
                 transitioningUid={transitioning}
               />
             ))}
           </div>
-          <div className="pagination-footer">
-            <span className="pagination-count">Exibindo {visible.length} de {total} {total === 1 ? "registro" : "registros"}</span>
-            {hasMore && (
-              <button className="btn btn-outline btn-sm" onClick={loadMore} style={{ marginTop: "0.5rem" }}>
-                Ver mais ↓
-              </button>
-            )}
-            <div ref={sentinelRef} />
-          </div>
+          {data && (
+            <Pagination
+              page={data.page}
+              totalPages={data.totalPages}
+              total={data.total}
+              pageSize={data.pageSize}
+              itemLabel="conta"
+              itemLabelPlural="contas"
+              onChange={setPage}
+            />
+          )}
         </>
       )}
     </>
