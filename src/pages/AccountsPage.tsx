@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { Pagination } from "../components/Pagination";
 import { buildDetailHref } from "../lib/buildDetailHref";
@@ -147,7 +147,7 @@ function buildGroups(accounts: Account[]): AccountGroup[] {
 // ── Page ────────────────────────────────────────────────────────────────────
 
 export function AccountsPage() {
-  const [tab, setTab] = useUrlState("tab", "pending");
+  const [tab] = useUrlState("tab", "pending");
   const [statusFilter, setStatusFilter] = useUrlState(
     "status",
     TAB_STATUS_CSV.pending,
@@ -159,6 +159,7 @@ export function AccountsPage() {
   const [transitioning, setTransitioning] = useState<string | null>(null);
   const [sort, setSort] = useUrlState("sort", "name");
   const [page, setPage] = useUrlNumber("page", 1);
+  const [, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -207,9 +208,18 @@ export function AccountsPage() {
   const groups = useMemo(() => buildGroups(items), [items]);
 
   function switchTab(t: FilterTab) {
-    setTab(t);
-    setStatusFilter(TAB_STATUS_CSV[t]);
-    setRoleFilters("");
+    // Atomic URL update — multiple setSearchParams in the same frame race
+    // because each reads the URL before the previous navigate commits.
+    setSearchParams(
+      () => {
+        const next = new URLSearchParams();
+        if (t !== "pending") next.set("tab", t);
+        next.set("status", TAB_STATUS_CSV[t]);
+        // Reset search, role, page, sort when switching tabs
+        return next;
+      },
+      { replace: true },
+    );
   }
 
   function toggleRole(code: string, e: React.MouseEvent) {
