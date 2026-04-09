@@ -1,33 +1,9 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Pagination } from "../components/Pagination";
+import { AccountListCard, type AccountListItem } from "../components/account/AccountListCard";
 import { buildDetailHref } from "../lib/buildDetailHref";
 import { useServerPagination } from "../hooks/useServerPagination";
 import { useUrlNumber, useUrlState } from "../hooks/useUrlState";
-
-interface Account {
-  uid: string;
-  name: string;
-  email: string;
-  roles: string[];
-  status: string;
-}
-
-const STATUS_LABELS: Record<string, { label: string; variant: string }> = {
-  rejected: { label: "Rejeitado", variant: "error" },
-  expelled: { label: "Suspenso", variant: "error" },
-  archived: { label: "Arquivado", variant: "muted" },
-};
-
-const ROLE_LABELS: Record<string, string> = {
-  student: "Aluno",
-  guardian: "Responsável",
-  teacher: "Professor",
-  instructor: "Instrutor",
-  owner: "Controlador",
-  assistant: "Assistente",
-  supporter: "Apoiador",
-  sponsor: "Patrocinador",
-};
 
 const STATUS_FILTERS: { value: string; label: string }[] = [
   { value: "rejected,expelled,archived", label: "Todos" },
@@ -48,7 +24,7 @@ export function BlockedAccountsPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { data, isLoading } = useServerPagination<Account>({
+  const { data, isLoading } = useServerPagination<AccountListItem>({
     endpoint: "/accounts",
     params: {
       status: statusFilter,
@@ -109,46 +85,14 @@ export function BlockedAccountsPage() {
       ) : (
         <>
           <div className="account-list">
-            {items.map((a) => {
-              const initials = a.name
-                .split(" ")
-                .map((w) => w[0])
-                .slice(0, 2)
-                .join("")
-                .toUpperCase();
-              const statusInfo =
-                STATUS_LABELS[a.status] ?? { label: a.status, variant: "muted" };
-              return (
-                <div
-                  key={a.uid}
-                  className="account-card"
-                  data-status={a.status}
-                  onClick={() => navigate(buildDetailHref(a.uid, location))}
-                >
-                  <div className="account-card-header">
-                    <div className="account-avatar">{initials}</div>
-                    <div className="account-info">
-                      <div className="account-name">{a.name}</div>
-                      <div className="account-email">{a.email}</div>
-                      <div className="account-meta">
-                        {a.roles.map((r) => (
-                          <span key={r} className="account-role-chip">
-                            {ROLE_LABELS[r] ?? r}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="account-status">
-                      <span
-                        className={`status-badge status-badge--${statusInfo.variant}`}
-                      >
-                        {statusInfo.label}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {items.map((a, i) => (
+              <AccountListCard
+                key={a.uid}
+                account={a}
+                index={i}
+                onDetail={(uid) => navigate(buildDetailHref(uid, location))}
+              />
+            ))}
           </div>
           {data && (
             <Pagination

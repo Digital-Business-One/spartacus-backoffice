@@ -1,16 +1,9 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Pagination } from "../components/Pagination";
+import { AccountListCard, type AccountListItem } from "../components/account/AccountListCard";
 import { buildDetailHref } from "../lib/buildDetailHref";
 import { useServerPagination } from "../hooks/useServerPagination";
 import { useUrlNumber, useUrlState } from "../hooks/useUrlState";
-
-interface Account {
-  uid: string;
-  name: string;
-  email: string;
-  roles: string[];
-  status: string;
-}
 
 const PAGE_SIZE = 12;
 
@@ -20,7 +13,7 @@ export function TeachersPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { data, isLoading } = useServerPagination<Account>({
+  const { data, isLoading } = useServerPagination<AccountListItem>({
     endpoint: "/accounts",
     params: {
       status: "approved",
@@ -65,32 +58,14 @@ export function TeachersPage() {
       ) : (
         <>
           <div className="account-list">
-            {items.map((a) => {
-              const initials = a.name
-                .split(" ")
-                .map((w) => w[0])
-                .slice(0, 2)
-                .join("")
-                .toUpperCase();
-              return (
-                <div
-                  key={a.uid}
-                  className="account-card"
-                  onClick={() => navigate(buildDetailHref(a.uid, location))}
-                >
-                  <div className="account-card-header">
-                    <div className="account-avatar">{initials}</div>
-                    <div className="account-info">
-                      <div className="account-name">{a.name}</div>
-                      <div className="account-email">{a.email}</div>
-                      <div className="account-meta">
-                        <span className="account-role-chip">Professor</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {items.map((a, i) => (
+              <AccountListCard
+                key={a.uid}
+                account={a}
+                index={i}
+                onDetail={(uid) => navigate(buildDetailHref(uid, location))}
+              />
+            ))}
           </div>
           {data && (
             <Pagination

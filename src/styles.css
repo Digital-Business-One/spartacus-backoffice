@@ -2265,6 +2265,22 @@ input, select, button, textarea {
   flex-shrink: 0;
 }
 
+.account-avatar--lg {
+  width: 64px;
+  height: 64px;
+  font-size: 1.3rem;
+}
+
+.account-avatar--photo {
+  object-fit: cover;
+}
+
+.account-modalities {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
 .account-info { flex: 1; min-width: 0; }
 
 .account-name {
