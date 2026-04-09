@@ -149,8 +149,8 @@ export function AttendanceCalendar({
       </div>
 
       <div className="att-calendar-legend">
-        <LegendItem variant="success" label="Validado" />
-        <LegendItem variant="warning" label="Aguardando" />
+        <LegendItem variant="success" label="Confirmado" />
+        <LegendItem variant="warning" label="Aguardando confirmação" />
         <LegendItem variant="error" label="Não confirmado" />
         <LegendItem variant="muted" label="Justificado" />
       </div>

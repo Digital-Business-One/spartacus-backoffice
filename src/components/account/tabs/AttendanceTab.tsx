@@ -47,8 +47,8 @@ const STATUS_VARIANT: Record<string, string> = {
 };
 
 const STATUS_OPTIONS = [
-  { value: "confirmed", label: "Validado" },
-  { value: "registered", label: "Aguardando" },
+  { value: "confirmed", label: "Confirmado" },
+  { value: "registered", label: "Aguardando confirmação" },
   { value: "absent", label: "Não confirmado" },
   { value: "absent_justified", label: "Justificado" },
 ];
