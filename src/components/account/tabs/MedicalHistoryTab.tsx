@@ -241,10 +241,12 @@ export function MedicalHistoryTab({ uid }: MedicalHistoryTabProps) {
             </span>
           )}
         </div>
-        <div className="anamnese-status-disclaimer">
-          ⓘ Esta aprovação faz parte do fluxo administrativo de aprovação de
-          contas e não constitui validação clínica.
-        </div>
+        {data.status === "pending_approval" && (
+          <div className="anamnese-status-disclaimer">
+            ⓘ Esta aprovação faz parte do fluxo administrativo de aprovação
+            de contas e não constitui validação clínica.
+          </div>
+        )}
       </div>
 
       {/* Daily activities (16+ only) */}
