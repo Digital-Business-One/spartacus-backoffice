@@ -2122,7 +2122,9 @@ input, select, button, textarea {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.6rem 0.2rem 0;
+  padding: 0.75rem 0.2rem 0.5rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--border);
   cursor: pointer;
   user-select: none;
 }
@@ -2139,10 +2141,9 @@ input, select, button, textarea {
 }
 
 .account-dependents-inner {
-  margin: 0.5rem -1.4rem 0;
-  padding: 0.85rem 1.1rem 0.85rem 1.4rem;
+  margin: 0 -1.4rem 0;
+  padding: 0.75rem 1.1rem 0.85rem 1.4rem;
   background: var(--bg-primary);
-  border-top: 1px solid var(--border);
   border-radius: 0 0 14px 14px;
   position: relative;
 }
@@ -2165,7 +2166,7 @@ input, select, button, textarea {
 
 /* Dependent row */
 .dep-row {
-  padding: 0.6rem 0.7rem 0.6rem 0.5rem;
+  padding: 0.75rem 0.7rem 0.75rem 0.5rem;
   margin-left: 0.85rem;
   border-left: 2px solid rgba(198,163,78,0.25);
   border-radius: 0 10px 10px 0;
@@ -2178,7 +2179,7 @@ input, select, button, textarea {
 }
 
 .dep-row + .dep-row {
-  margin-top: 0.35rem;
+  margin-top: 0.4rem;
 }
 
 .dep-row-header {
