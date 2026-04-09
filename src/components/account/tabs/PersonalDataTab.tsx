@@ -1,3 +1,4 @@
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   AUTH_PROVIDER_LABELS,
   AccountDetail,
@@ -89,6 +90,8 @@ function GuardianCard({
   guardianPhone?: string | null;
   relationship?: string | null;
 }) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const relationshipLabel = relationship
     ? RELATIONSHIP_LABELS[relationship] ?? relationship
     : null;
@@ -100,8 +103,19 @@ function GuardianCard({
     .join("")
     .toUpperCase();
 
+  function handleClick() {
+    const from = `${location.pathname}${location.search}`;
+    navigate(`/contas/${guardianUid}?from=${encodeURIComponent(from)}`);
+  }
+
   return (
-    <div className="detail-guardian-card">
+    <div
+      className="detail-guardian-card detail-guardian-card--clickable"
+      onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter") handleClick(); }}
+    >
       <div className="detail-guardian-label">
         Este aluno é dependente de
       </div>
@@ -121,6 +135,7 @@ function GuardianCard({
             {guardianPhone && <span>{formatPhone(guardianPhone)}</span>}
           </div>
         </div>
+        <span className="detail-guardian-arrow">→</span>
       </div>
     </div>
   );

@@ -2684,6 +2684,23 @@ input, select, button, textarea {
   margin-bottom: 1rem;
 }
 
+.detail-guardian-card--clickable {
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.detail-guardian-card--clickable:hover {
+  border-color: var(--gold);
+  background: rgba(198, 163, 78, 0.08);
+}
+
+.detail-guardian-arrow {
+  color: var(--gold);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
 .detail-guardian-label {
   font-size: 0.75rem;
   color: var(--text-muted);
