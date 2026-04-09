@@ -2783,12 +2783,186 @@ input, select, button, textarea {
 
 /* ── Account detail · Classes tab (RFC-12) ────────────────────────────────── */
 
-.classes-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+/* Stats bar — prototype: 3 cells separated by vertical dividers */
+.ct-stats {
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem 0;
+  margin-bottom: 1.25rem;
 }
+
+.ct-stat {
+  flex: 1;
+  text-align: center;
+}
+
+.ct-stat-value {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.ct-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.4rem;
+}
+
+.ct-stat-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* Class card list */
+.ct-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Individual class card — gold left accent like the prototype */
+.ct-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+}
+
+/* Header: icon circle + name + badges */
+.ct-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.ct-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(198, 163, 78, 0.12);
+  border: 1px solid rgba(198, 163, 78, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ct-card-icon-inner {
+  font-size: 1.1rem;
+}
+
+.ct-card-title-area {
+  flex: 1;
+  min-width: 0;
+}
+
+.ct-card-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ct-card-name {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ct-card-modality-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: rgba(198, 163, 78, 0.15);
+  color: var(--gold);
+  border: 1px solid rgba(198, 163, 78, 0.4);
+}
+
+.ct-card-status-badge {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: rgba(160, 160, 160, 0.15);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.ct-card-status-badge--active {
+  background: rgba(46, 184, 92, 0.12);
+  color: var(--success);
+  border-color: rgba(46, 184, 92, 0.4);
+}
+
+/* Details grid — prototype shows 4 columns: Dias, Horário, Local, Professor */
+.ct-card-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.75rem 1.25rem;
+  font-size: 0.85rem;
+}
+
+.ct-card-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ct-card-detail-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ct-card-detail-value {
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+/* Week day strip — matching prototype's highlighted blocks */
+.ct-week-strip {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.ct-week-day {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.ct-week-day.active {
+  background: var(--gold);
+  color: var(--bg-primary);
+  border-color: var(--gold);
+}
+
+/* ── Shared stat cards (used by Attendance, Donations tabs) ───────────────── */
 
 .classes-stat-card {
   background: var(--bg-card);
@@ -2828,89 +3002,6 @@ input, select, button, textarea {
   font-size: 0.7rem;
   color: var(--text-muted);
   margin-top: 0.2rem;
-}
-
-.classes-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.class-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 1rem 1.25rem;
-}
-
-.class-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-  gap: 0.75rem;
-}
-
-.class-card-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.class-card-name {
-  font-family: var(--font-heading);
-  font-size: 1rem;
-  color: var(--text-primary);
-}
-
-.class-card-details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 0.5rem 1rem;
-  font-size: 0.85rem;
-}
-
-.class-card-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.class-card-detail-label {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.class-card-detail-value {
-  color: var(--text-primary);
-}
-
-.class-week-strip {
-  display: flex;
-  gap: 0.2rem;
-}
-
-.class-week-day {
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.class-week-day.active {
-  background: var(--gold);
-  color: var(--bg-primary);
-  border-color: var(--gold);
 }
 
 /* ── Account detail · Anamnese tab (RFC-12) ───────────────────────────────── */

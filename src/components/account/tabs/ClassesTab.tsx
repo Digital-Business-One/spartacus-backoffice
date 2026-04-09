@@ -4,27 +4,10 @@ interface ClassesTabProps {
   account: AccountDetail;
 }
 
-const DAY_LABELS: Record<string, string> = {
-  mon: "Seg",
-  tue: "Ter",
-  wed: "Qua",
-  thu: "Qui",
-  fri: "Sex",
-  sat: "Sáb",
-  sun: "Dom",
-};
-
-const DAY_INITIALS: Record<string, string> = {
-  mon: "S",
-  tue: "T",
-  wed: "Q",
-  thu: "Q",
-  fri: "S",
-  sat: "S",
-  sun: "D",
-};
-
 const WEEK_DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+const DAY_INITIALS: Record<string, string> = {
+  mon: "S", tue: "T", wed: "Q", thu: "Q", fri: "S", sat: "S", sun: "D",
+};
 
 export function ClassesTab({ account }: ClassesTabProps) {
   const classes = account.classes ?? [];
@@ -38,7 +21,6 @@ export function ClassesTab({ account }: ClassesTabProps) {
     );
   }
 
-  // Aggregations
   const activeCount = classes.filter((c) => c.active).length;
   const modalityCount = new Set(classes.map((c) => c.modalityName)).size;
   const sessionsPerWeek = classes.reduce(
@@ -48,26 +30,30 @@ export function ClassesTab({ account }: ClassesTabProps) {
 
   return (
     <div className="detail-tab-content">
-      <div className="classes-stats">
-        <StatCard value={activeCount} label="Turmas ativas" />
-        <StatCard value={modalityCount} label="Modalidades" />
-        <StatCard value={sessionsPerWeek} label="Aulas / semana" />
+      {/* Stats row with dividers */}
+      <div className="ct-stats">
+        <div className="ct-stat">
+          <div className="ct-stat-value">{activeCount}</div>
+          <div className="ct-stat-label">Turmas ativas</div>
+        </div>
+        <div className="ct-stat-divider" />
+        <div className="ct-stat">
+          <div className="ct-stat-value">{modalityCount}</div>
+          <div className="ct-stat-label">Modalidades</div>
+        </div>
+        <div className="ct-stat-divider" />
+        <div className="ct-stat">
+          <div className="ct-stat-value">{sessionsPerWeek}</div>
+          <div className="ct-stat-label">Aulas / semana</div>
+        </div>
       </div>
 
-      <div className="classes-list">
+      {/* Class cards */}
+      <div className="ct-list">
         {classes.map((c) => (
           <ClassCard key={c.id} item={c} />
         ))}
       </div>
-    </div>
-  );
-}
-
-function StatCard({ value, label }: { value: number; label: string }) {
-  return (
-    <div className="classes-stat-card">
-      <div className="classes-stat-value">{value}</div>
-      <div className="classes-stat-label">{label}</div>
     </div>
   );
 }
@@ -77,30 +63,32 @@ function ClassCard({ item }: { item: ClassDetail }) {
   const firstSlot = item.scheduleItems?.[0];
 
   return (
-    <div className="class-card">
-      <div className="class-card-header">
-        <div className="class-card-title">
-          <span className="class-card-name">{item.name}</span>
-          <span className="account-role-chip account-role-chip--success">
-            {item.modalityName}
-          </span>
+    <div className="ct-card">
+      {/* Header: icon + name + badges */}
+      <div className="ct-card-header">
+        <div className="ct-card-icon">
+          <span className="ct-card-icon-inner">🥋</span>
         </div>
-        <span
-          className={`status-badge status-badge--${item.active ? "success" : "muted"}`}
-        >
-          {item.active ? "Ativa" : "Inativa"}
-        </span>
+        <div className="ct-card-title-area">
+          <div className="ct-card-name-row">
+            <span className="ct-card-name">{item.name}</span>
+            <span className="ct-card-modality-badge">{item.modalityName}</span>
+            <span className={`ct-card-status-badge ${item.active ? "ct-card-status-badge--active" : ""}`}>
+              {item.active ? "Ativa" : "Inativa"}
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className="class-card-details">
-        <div className="class-card-detail">
-          <span className="class-card-detail-label">Dias da semana</span>
-          <div className="class-week-strip">
+      {/* Details grid */}
+      <div className="ct-card-details">
+        <div className="ct-card-detail">
+          <span className="ct-card-detail-label">Dias da semana</span>
+          <div className="ct-week-strip">
             {WEEK_DAYS.map((d) => (
               <span
                 key={d}
-                className={`class-week-day ${days.has(d) ? "active" : ""}`}
-                title={DAY_LABELS[d]}
+                className={`ct-week-day ${days.has(d) ? "active" : ""}`}
               >
                 {DAY_INITIALS[d]}
               </span>
@@ -109,25 +97,25 @@ function ClassCard({ item }: { item: ClassDetail }) {
         </div>
 
         {firstSlot && (
-          <div className="class-card-detail">
-            <span className="class-card-detail-label">Horário</span>
-            <span className="class-card-detail-value">
+          <div className="ct-card-detail">
+            <span className="ct-card-detail-label">Horário</span>
+            <span className="ct-card-detail-value">
               {firstSlot.startTime} – {firstSlot.endTime}
             </span>
           </div>
         )}
 
         {item.location && (
-          <div className="class-card-detail">
-            <span className="class-card-detail-label">Local</span>
-            <span className="class-card-detail-value">{item.location}</span>
+          <div className="ct-card-detail">
+            <span className="ct-card-detail-label">Local</span>
+            <span className="ct-card-detail-value">{item.location}</span>
           </div>
         )}
 
         {item.teacher && (
-          <div className="class-card-detail">
-            <span className="class-card-detail-label">Professor</span>
-            <span className="class-card-detail-value">{item.teacher}</span>
+          <div className="ct-card-detail">
+            <span className="ct-card-detail-label">Professor</span>
+            <span className="ct-card-detail-value">{item.teacher}</span>
           </div>
         )}
       </div>
