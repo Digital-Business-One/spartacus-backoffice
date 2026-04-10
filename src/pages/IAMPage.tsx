@@ -123,6 +123,16 @@ export function IAMPage() {
       alert("Usuário não pode ficar sem perfil.");
       return;
     }
+    // Block removing the last owner
+    if (role === "owner") {
+      const ownerCount = allMembers.filter((m) =>
+        m.roles.includes("owner"),
+      ).length;
+      if (ownerCount <= 1) {
+        alert("O projeto deve ter pelo menos um Controlador.");
+        return;
+      }
+    }
     setRemovingUid(uid);
     try {
       const currentRoles = member?.roles ?? [];
