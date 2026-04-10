@@ -72,6 +72,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/professores", label: "Professores" },
       { to: "/instrutores", label: "Instrutores" },
       { to: "/apoio", label: "Apoio" },
+      { to: "/iam", label: "Segurança" },
     ],
   },
   {

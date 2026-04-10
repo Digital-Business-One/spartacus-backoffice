@@ -29,6 +29,7 @@ import { CalendarPage } from "./pages/CalendarPage";
 import { EventsPage } from "./pages/EventsPage";
 import { AulasPage } from "./pages/AulasPage";
 import { ReportsPage } from "./pages/ReportsPage";
+import { IAMPage } from "./pages/IAMPage";
 import { ProjectSettingsPage } from "./pages/ProjectSettingsPage";
 import { ClassWizardPage } from "./pages/ClassWizardPage";
 
@@ -116,6 +117,7 @@ export default function App() {
             <Route path="/professores" element={<TeachersPage />} />
             <Route path="/instrutores" element={<InstructorsPage />} />
             <Route path="/apoio" element={<SupportPage />} />
+            <Route path="/iam" element={<IAMPage />} />
             {/* Redirect antigo /contas → /em-analise */}
             <Route path="/contas" element={<Navigate to="/em-analise" replace />} />
             {/* Módulos */}

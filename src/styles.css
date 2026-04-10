@@ -3963,3 +3963,527 @@ input, select, button, textarea {
   text-transform: uppercase;
   letter-spacing: 4px;
 }
+
+/* ── IAM — Gestão de Acesso (RFC-13) ─────────────────────────────────────── */
+
+.iam-columns {
+  display: flex;
+  gap: 0;
+  min-height: calc(100vh - 160px);
+  overflow: hidden;
+}
+
+.iam-col {
+  flex-shrink: 0;
+  transition: width 300ms ease, opacity 200ms ease, transform 300ms ease;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.iam-col--hidden {
+  width: 0 !important;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateX(-100%);
+}
+
+.iam-col--gone {
+  width: 0 !important;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.iam-col-1 {
+  width: 220px;
+  border-right: 1px solid var(--border);
+  background: var(--bg-card);
+  padding: 1rem;
+}
+
+.iam-col-2 {
+  width: 320px;
+  border-right: 1px solid var(--border);
+  padding: 1.25rem;
+}
+
+.iam-col-3 {
+  width: 300px;
+  border-right: 1px solid var(--border);
+  padding: 1rem;
+}
+
+.iam-col-4 {
+  flex: 1;
+  padding: 1.25rem;
+}
+
+/* Empty state */
+.iam-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  gap: 0.5rem;
+}
+
+.iam-empty-icon { font-size: 2.5rem; }
+.iam-empty-hint { font-size: 0.8rem; }
+
+/* Back button */
+.iam-back-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  margin-bottom: 0.75rem;
+}
+.iam-back-btn:hover { color: var(--gold); }
+
+/* ── Col 1: Role list ─────────────────────────────────────────────────────── */
+
+.iam-role-list-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 0.75rem 0;
+}
+
+.iam-role-search {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+  outline: none;
+}
+.iam-role-search:focus { border-color: var(--gold); }
+
+.iam-role-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.iam-role-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+.iam-role-item:hover { background: rgba(255,255,255,0.04); }
+.iam-role-item.active {
+  background: rgba(198,163,78,0.12);
+  color: var(--gold);
+}
+
+.iam-role-item-icon { font-size: 1rem; flex-shrink: 0; }
+.iam-role-item-label { flex: 1; }
+
+.iam-role-badge {
+  font-size: 0.55rem;
+  font-weight: 700;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.iam-role-badge--admin {
+  background: rgba(198,163,78,0.2);
+  color: var(--gold);
+}
+.iam-role-badge--full {
+  background: rgba(46,184,92,0.2);
+  color: var(--success);
+}
+.iam-role-badge--read {
+  background: rgba(100,149,237,0.2);
+  color: #6495ED;
+}
+
+.iam-role-count {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  background: var(--bg-primary);
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+  min-width: 1.2rem;
+  text-align: center;
+}
+
+/* ── Col 2: Role detail ───────────────────────────────────────────────────── */
+
+.iam-role-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+.iam-role-detail-icon { font-size: 1.5rem; }
+.iam-role-detail-name {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.iam-section { margin-bottom: 1.25rem; }
+.iam-section-title {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 0.5rem 0;
+}
+.iam-section-text {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.iam-permissions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.iam-permission-badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: var(--text-primary);
+}
+
+.iam-users-card {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.85rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.iam-users-card:hover { border-color: var(--gold); }
+.iam-users-card-icon { font-size: 1.1rem; }
+.iam-users-card-label { flex: 1; }
+.iam-users-card-count {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  color: var(--gold);
+}
+.iam-users-card-arrow { color: var(--text-muted); font-size: 1.2rem; }
+
+/* ── Col 3: Users list ────────────────────────────────────────────────────── */
+
+.iam-users-panel { display: flex; flex-direction: column; height: 100%; }
+.iam-users-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+.iam-users-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin: 0;
+}
+.iam-users-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+  overflow-y: auto;
+}
+.iam-users-empty {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2rem 1rem;
+  font-size: 0.85rem;
+}
+
+/* User card */
+.iam-user-card {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+.iam-user-card:hover { background: rgba(255,255,255,0.04); }
+
+.iam-user-info { flex: 1; min-width: 0; }
+.iam-user-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.iam-user-email {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Remove button — visible only on hover */
+.iam-user-remove-btn {
+  display: none;
+  background: rgba(231,76,76,0.15);
+  border: 1px solid rgba(231,76,76,0.4);
+  color: var(--error);
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.iam-user-card:hover .iam-user-remove-btn { display: flex; }
+
+/* Inline confirm state */
+.iam-user-card--confirm {
+  background: rgba(231,76,76,0.1);
+  border: 1px solid rgba(231,76,76,0.4);
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+  cursor: default;
+}
+.iam-user-card--confirm:hover { background: rgba(231,76,76,0.1); }
+.iam-user-confirm-text {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+}
+.iam-user-confirm-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+.iam-btn-danger {
+  background: var(--error) !important;
+  color: #fff !important;
+  border: none !important;
+}
+.iam-btn-danger:hover { opacity: 0.9; }
+
+/* ── Col 4: User detail ───────────────────────────────────────────────────── */
+
+.iam-user-detail-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 1.25rem 0;
+}
+.iam-user-detail-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.iam-user-detail-name {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.iam-user-detail-rows { margin-bottom: 1.25rem; }
+.iam-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 0.85rem;
+}
+.iam-detail-row:last-child { border-bottom: none; }
+.iam-detail-row-label { color: var(--text-muted); }
+.iam-detail-row-value { color: var(--text-primary); }
+
+.iam-view-profile-btn {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+/* ── Assign modal ─────────────────────────────────────────────────────────── */
+
+.iam-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.iam-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 420px;
+  max-width: 92vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.iam-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.25rem 1.25rem 0.75rem;
+}
+.iam-modal-title {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+.iam-modal-subtitle {
+  font-size: 0.8rem;
+  color: var(--gold);
+  margin-top: 0.2rem;
+}
+.iam-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+.iam-modal-close:hover { color: var(--text-primary); }
+
+.iam-modal-search {
+  padding: 0 1.25rem;
+  margin-bottom: 0.75rem;
+}
+.iam-modal-search input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  outline: none;
+}
+.iam-modal-search input:focus { border-color: var(--gold); }
+
+.iam-modal-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 1.25rem;
+  max-height: 400px;
+}
+.iam-modal-loading, .iam-modal-empty {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2rem 0;
+  font-size: 0.85rem;
+}
+
+.iam-modal-user {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-bottom: 0.25rem;
+}
+.iam-modal-user:hover { background: rgba(255,255,255,0.04); }
+.iam-modal-user.selected {
+  background: rgba(198,163,78,0.1);
+  border: 1px solid rgba(198,163,78,0.3);
+}
+
+.iam-modal-user-info { flex: 1; min-width: 0; }
+.iam-modal-user-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.iam-modal-user-meta {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.iam-modal-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.iam-modal-user.selected .iam-modal-check {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--bg-primary);
+}
+
+.iam-modal-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border);
+}
+.iam-modal-count {
+  flex: 1;
+  font-size: 0.78rem;
+  color: var(--gold);
+}
