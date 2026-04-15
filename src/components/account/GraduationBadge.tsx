@@ -1,19 +1,24 @@
 import type { GraduationEntry } from "./types";
 
 /**
- * Vertical graduation badge — one per modality the user is graduated in.
+ * Graduation badge — stylized vertical BJJ-belt representation.
  *
- * Layout:
- * ```
- * ┌───┐
- * │ J │ ← label letter 1
- * │ I │ ← label letter 2
- * │ U │ ← label letter 3
- * │ ─ │ ← belt color band
- * │ ─ │ ← degree mark 1
- * │ ─ │ ← degree mark 2 (up to 4)
- * └───┘
- * ```
+ * The whole badge is the belt color (dominant visual), with vertical
+ * modality letters at the top and black grau stripes near the bottom
+ * (traditional BJJ belt tip representation). Fixed 14×82 so columns
+ * align perfectly.
+ *
+ *   ┌──┐
+ *   │ J│   ← stacked letters at top, small
+ *   │ I│
+ *   │ U│
+ *   │██│   ← belt color fills body
+ *   │██│
+ *   │██│
+ *   │━━│   ← black grau stripes crossing belt
+ *   │━━│
+ *   │──│   ← tiny light tip at bottom
+ *   └──┘
  */
 
 interface GraduationBadgeProps {
@@ -28,35 +33,71 @@ const MODALITY_LABELS: Record<string, string> = {
   capoeira: "CAP",
 };
 
-/** Map a belt color name (en or pt) to a CSS color value. */
 const BELT_COLORS: Record<string, string> = {
   // Jiu-Jitsu — adult
-  white: "#f5f5f5",
-  branca: "#f5f5f5",
-  blue: "#1e6aa8",
-  azul: "#1e6aa8",
-  purple: "#5e3a8a",
-  roxa: "#5e3a8a",
-  brown: "#6b4423",
-  marrom: "#6b4423",
-  black: "#1a1a1a",
-  preta: "#1a1a1a",
-  // Jiu-Jitsu — youth
-  cinza: "#7a7a7a",
-  gray: "#7a7a7a",
-  amarela: "#e8c547",
-  yellow: "#e8c547",
-  laranja: "#e8843c",
-  orange: "#e8843c",
-  verde: "#3aa84a",
-  green: "#3aa84a",
+  white: "#f2f2f2",
+  branca: "#f2f2f2",
+  blue: "#1f4fa0",
+  azul: "#1f4fa0",
+  purple: "#5a2c89",
+  roxa: "#5a2c89",
+  brown: "#5a3515",
+  marrom: "#5a3515",
+  black: "#111111",
+  preta: "#111111",
+  // Jiu-Jitsu — youth / kids
+  cinza: "#a8a8a8",
+  gray: "#a8a8a8",
+  amarela: "#f0c83b",
+  yellow: "#f0c83b",
+  laranja: "#ea8226",
+  orange: "#ea8226",
+  verde: "#2ea247",
+  green: "#2ea247",
   // Capoeira / generic
-  red: "#c84030",
-  vermelha: "#c84030",
+  red: "#b83228",
+  vermelha: "#b83228",
+  crua: "#dac6a5",
+  bege: "#dac6a5",
 };
 
-function beltColor(belt: string): string {
-  return BELT_COLORS[belt.toLowerCase()] ?? "var(--gold)";
+const FALLBACK_COLOR = "#bcbcbc";
+
+const LIGHT_BELTS = new Set([
+  "white", "branca",
+  "yellow", "amarela",
+  "crua", "bege",
+  "cinza", "gray",
+]);
+
+function resolveBelt(belt: string): {
+  primary: string;
+  secondary: string | null;
+  darkText: boolean;
+} {
+  const key = (belt ?? "").trim().toLowerCase();
+  if (!key) return { primary: FALLBACK_COLOR, secondary: null, darkText: true };
+
+  if (key.includes("-") || key.includes("/") || key.includes(" e ")) {
+    const parts = key.split(/[-/]|\s+e\s+/).map((p) => p.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      const a = BELT_COLORS[parts[0]];
+      const b = BELT_COLORS[parts[1]];
+      if (a && b) {
+        return {
+          primary: a,
+          secondary: b,
+          darkText: LIGHT_BELTS.has(parts[0]),
+        };
+      }
+    }
+  }
+
+  return {
+    primary: BELT_COLORS[key] ?? FALLBACK_COLOR,
+    secondary: null,
+    darkText: LIGHT_BELTS.has(key) || !BELT_COLORS[key],
+  };
 }
 
 function modalityLabel(modalityId: string): string {
@@ -65,26 +106,40 @@ function modalityLabel(modalityId: string): string {
 
 export function GraduationBadge({ modalityId, entry }: GraduationBadgeProps) {
   const label = modalityLabel(modalityId);
-  const color = beltColor(entry.belt);
-  // Cap degrees at 4 visual marks
+  const { primary, secondary, darkText } = resolveBelt(entry.belt);
   const degrees = Math.max(0, Math.min(4, entry.degree));
   const marks = Array.from({ length: degrees }, (_, i) => i);
+  const beltTitle = entry.belt
+    ? `${entry.belt}${entry.degree > 0 ? ` · ${entry.degree}º grau` : ""}`
+    : "Sem graduação";
+
+  const bgStyle: React.CSSProperties = secondary
+    ? {
+        backgroundImage: `linear-gradient(to bottom, ${primary} 0%, ${primary} 50%, ${secondary} 50%, ${secondary} 100%)`,
+      }
+    : { backgroundColor: primary };
+
+  const letterColor = darkText ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.92)";
 
   return (
-    <div className="grad-badge" title={`${entry.belt} · ${entry.degree}º grau`}>
-      <div className="grad-badge-label">
+    <div className="grad-badge" title={beltTitle} style={bgStyle}>
+      <div className="grad-badge-letters">
         {label.split("").map((ch, i) => (
-          <span key={i} className="grad-badge-letter">
+          <span
+            key={i}
+            className="grad-badge-letter"
+            style={{ color: letterColor }}
+          >
             {ch}
           </span>
         ))}
       </div>
-      <div className="grad-badge-belt" style={{ backgroundColor: color }} />
-      <div className="grad-badge-degrees">
+      <div className="grad-badge-graus">
         {marks.map((i) => (
           <span key={i} className="grad-badge-mark" />
         ))}
       </div>
+      <div className="grad-badge-end" />
     </div>
   );
 }
@@ -95,17 +150,12 @@ interface GraduationBadgeColumnProps {
 
 const MODALITY_ORDER = ["jiu-jitsu", "muay-thai", "mma", "capoeira"];
 
-/**
- * Column of up to 4 vertical graduation badges, one per known modality.
- * Modalities without a graduation entry are skipped (no empty badge).
- */
 export function GraduationBadgeColumn({ graduation }: GraduationBadgeColumnProps) {
   if (!graduation) return null;
   const entries = MODALITY_ORDER
     .filter((mid) => graduation[mid])
     .map((mid) => [mid, graduation[mid]] as const);
 
-  // Also include any unknown modalities (for forward compatibility)
   for (const [mid, entry] of Object.entries(graduation)) {
     if (!MODALITY_ORDER.includes(mid)) {
       entries.push([mid, entry]);
