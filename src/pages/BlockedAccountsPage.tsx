@@ -40,8 +40,8 @@ export function BlockedAccountsPage() {
   return (
     <>
       <div className="page-header">
-        <h2>Bloqueados</h2>
-        <p>Contas rejeitadas, suspensas ou arquivadas</p>
+        <h2>Lixeira</h2>
+        <p>Contas bloqueadas, suspensas ou arquivadas</p>
       </div>
 
       <div className="controls-panel">

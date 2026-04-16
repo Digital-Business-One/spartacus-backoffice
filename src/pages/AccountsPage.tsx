@@ -159,8 +159,8 @@ export function AccountsPage() {
   return (
     <>
       <div className="page-header">
-        <h2>Em análise</h2>
-        <p>Contas em processamento</p>
+        <h2>Onboarding</h2>
+        <p>Contas em processo de validação, anamnese e aprovação</p>
       </div>
 
       <div className="tab-bar">

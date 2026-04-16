@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../lib/api";
 import { RoleList } from "../components/iam/RoleList";
 import { RoleDetail } from "../components/iam/RoleDetail";
-import { RoleUsers } from "../components/iam/RoleUsers";
+import { RoleUsers, type RowError } from "../components/iam/RoleUsers";
 import { UserDetailPanel } from "../components/iam/UserDetailPanel";
 import { AssignUserModal } from "../components/iam/AssignUserModal";
 import { ROLES, findRole } from "../components/iam/roles";
@@ -29,6 +29,12 @@ interface AccountItem {
   status: string;
 }
 
+interface MemberItem {
+  userId?: string;
+  user_id?: string;
+  roles: string[];
+}
+
 interface AccountPage {
   items: AccountItem[];
   total: number;
@@ -36,25 +42,27 @@ interface AccountPage {
 
 export function IAMPage() {
   const [view, setView] = useState<View>({ step: "empty" });
-  const [allMembers, setAllMembers] = useState<
-    { userId: string; roles: string[] }[]
-  >([]);
+  const [allMembers, setAllMembers] = useState<MemberItem[]>([]);
   const [roleUsers, setRoleUsers] = useState<AccountItem[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [removingUid, setRemovingUid] = useState<string | null>(null);
   const [assignOpen, setAssignOpen] = useState(false);
+  const [rowError, setRowError] = useState<RowError | null>(null);
 
   // Fetch all memberships for user counts
   const fetchMembers = useCallback(async () => {
     try {
-      const members = await api.get<
-        { userId: string; roles: string[] }[]
-      >(`/projects/${PROJECT_ID}/members`);
+      const members = await api.get<MemberItem[]>(
+        `/projects/${PROJECT_ID}/members`,
+      );
       setAllMembers(members);
     } catch {
       setAllMembers([]);
     }
   }, []);
+
+  /** Handle snake_case/camelCase from the membership endpoint. */
+  const memberUid = (m: MemberItem) => m.userId ?? m.user_id ?? "";
 
   useEffect(() => {
     fetchMembers();
@@ -65,7 +73,7 @@ export function IAMPage() {
     const counts: Record<string, number> = {};
     for (const r of ROLES) counts[r.code] = 0;
     for (const m of allMembers) {
-      for (const role of m.roles) {
+      for (const role of m.roles ?? []) {
         counts[role] = (counts[role] ?? 0) + 1;
       }
     }
@@ -118,24 +126,37 @@ export function IAMPage() {
   async function handleRemoveRole(uid: string) {
     if (view.step !== "users" && view.step !== "user-detail") return;
     const role = view.role;
-    const member = allMembers.find((m) => m.userId === uid);
-    if (member && member.roles.length <= 1) {
-      alert("Usuário não pode ficar sem perfil.");
+    setRowError(null);
+
+    // Source of truth for the user's current roles: prefer the accounts list
+    // (camelCase, always populated) and fall back to membership list.
+    const accountEntry = roleUsers.find((u) => u.uid === uid);
+    const memberEntry = allMembers.find((m) => memberUid(m) === uid);
+    const currentRoles =
+      accountEntry?.roles ??
+      memberEntry?.roles ??
+      [];
+
+    if (currentRoles.length <= 1) {
+      setRowError({ uid, message: "Usuário não pode ficar sem perfil." });
       return;
     }
     // Block removing the last owner
     if (role === "owner") {
       const ownerCount = allMembers.filter((m) =>
-        m.roles.includes("owner"),
+        (m.roles ?? []).includes("owner"),
       ).length;
       if (ownerCount <= 1) {
-        alert("O projeto deve ter pelo menos um Controlador.");
+        setRowError({
+          uid,
+          message: "O projeto deve ter pelo menos um Controlador.",
+        });
         return;
       }
     }
+
     setRemovingUid(uid);
     try {
-      const currentRoles = member?.roles ?? [];
       const newRoles = currentRoles.filter((r) => r !== role);
       await api.patch(
         `/projects/${PROJECT_ID}/members/${uid}`,
@@ -144,7 +165,10 @@ export function IAMPage() {
       await fetchMembers();
       await fetchRoleUsers(role);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Erro ao remover");
+      setRowError({
+        uid,
+        message: err instanceof Error ? err.message : "Erro ao remover",
+      });
     } finally {
       setRemovingUid(null);
     }
@@ -173,6 +197,47 @@ export function IAMPage() {
   const showCol4 = view.step === "user-detail";
   const col2Hidden = view.step === "user-detail";
 
+  // Breadcrumb segments per current step (last segment = current, not clickable)
+  const crumbs: { label: string; onClick?: () => void }[] = [
+    {
+      label: "IAM",
+      onClick:
+        view.step !== "empty"
+          ? () => {
+              setRowError(null);
+              setView({ step: "empty" });
+            }
+          : undefined,
+    },
+  ];
+  if (view.step !== "empty" && currentRole) {
+    crumbs.push({
+      label: currentRole.label,
+      onClick:
+        view.step !== "role"
+          ? () => {
+              setRowError(null);
+              setView({ step: "role", role: currentRole.code });
+            }
+          : undefined,
+    });
+  }
+  if (view.step === "users" || view.step === "user-detail") {
+    crumbs.push({
+      label: "Usuários",
+      onClick:
+        view.step !== "users"
+          ? () => {
+              setRowError(null);
+              setView({ step: "users", role: view.role });
+            }
+          : undefined,
+    });
+  }
+  if (view.step === "user-detail" && selectedUser) {
+    crumbs.push({ label: selectedUser.name });
+  }
+
   return (
     <>
       <div className="page-header">
@@ -181,6 +246,36 @@ export function IAMPage() {
           Gerencie perfis, permissões e vínculos de acesso dos usuários do
           projeto
         </p>
+        <nav className="iam-breadcrumb" aria-label="breadcrumb">
+          {crumbs.map((c, i) => {
+            const isLast = i === crumbs.length - 1;
+            return (
+              <span key={`${i}-${c.label}`} className="iam-breadcrumb-seg">
+                {c.onClick && !isLast ? (
+                  <button
+                    type="button"
+                    className="iam-breadcrumb-link"
+                    onClick={c.onClick}
+                  >
+                    {c.label}
+                  </button>
+                ) : (
+                  <span
+                    className={`iam-breadcrumb-current${isLast ? " iam-breadcrumb-current--last" : ""}`}
+                    aria-current={isLast ? "page" : undefined}
+                  >
+                    {c.label}
+                  </span>
+                )}
+                {!isLast && (
+                  <span className="iam-breadcrumb-sep" aria-hidden="true">
+                    ›
+                  </span>
+                )}
+              </span>
+            );
+          })}
+        </nav>
       </div>
 
       <div className="iam-columns">
@@ -238,11 +333,14 @@ export function IAMPage() {
                     name: u.name,
                     email: u.email,
                     photoUrl: u.photoUrl ?? u.photo_url,
+                    roles: u.roles,
                   }))}
                   onSelectUser={selectUser}
                   onAssign={() => setAssignOpen(true)}
                   onRemove={handleRemoveRole}
                   removingUid={removingUid}
+                  rowError={rowError}
+                  onDismissError={() => setRowError(null)}
                 />
               )}
             </>

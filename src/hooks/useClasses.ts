@@ -15,6 +15,8 @@ export interface ClassData {
   location?: string;
   age_range?: { min: number; max?: number };
   icon_url?: string;
+  active?: boolean;
+  student_count?: number;
 }
 
 export function useClasses() {
@@ -24,8 +26,12 @@ export function useClasses() {
   const fetchClasses = useCallback(async () => {
     setLoading(true);
     try {
-      // Public endpoint — use direct fetch to avoid CORS issues during signup
-      const res = await fetch(`${BASE_URL}/projects/${PROJECT_ID}/classes`);
+      // Public endpoint — use direct fetch to avoid CORS issues during signup.
+      // no-store bypasses browser cache so deletes/updates reflect immediately.
+      const res = await fetch(
+        `${BASE_URL}/projects/${PROJECT_ID}/classes?includeInactive=true`,
+        { cache: "no-store" },
+      );
       if (res.ok) {
         const data = await res.json();
         setClasses(data.classes ?? []);
@@ -60,9 +66,28 @@ export function useClasses() {
   }, [fetchClasses]);
 
   const deactivateClass = useCallback(async (classId: string) => {
-    await api.delete(`/projects/${PROJECT_ID}/classes/${classId}`);
+    const result = await api.delete<{ status: "deleted" | "deactivated" }>(
+      `/projects/${PROJECT_ID}/classes/${classId}`,
+    );
+    await fetchClasses();
+    return result?.status ?? "deleted";
+  }, [fetchClasses]);
+
+  const reactivateClass = useCallback(async (classId: string) => {
+    await api.post(
+      `/projects/${PROJECT_ID}/classes/${classId}/reactivate`,
+      {},
+    );
     await fetchClasses();
   }, [fetchClasses]);
 
-  return { classes, loading, refetch: fetchClasses, createClass, updateClass, deactivateClass };
+  return {
+    classes,
+    loading,
+    refetch: fetchClasses,
+    createClass,
+    updateClass,
+    deactivateClass,
+    reactivateClass,
+  };
 }

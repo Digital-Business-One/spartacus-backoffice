@@ -6,14 +6,16 @@ import { useServerPagination } from "../hooks/useServerPagination";
 import { useUrlNumber, useUrlState } from "../hooks/useUrlState";
 
 const ROLE_FILTERS: { value: string; label: string }[] = [
-  { value: "supporter", label: "Apoiadores" },
-  { value: "sponsor", label: "Patrocinadores" },
+  { value: "teacher", label: "Professores" },
+  { value: "instructor", label: "Instrutores" },
+  { value: "assistant", label: "Assistentes" },
+  { value: "owner", label: "Controladores" },
 ];
 
 const PAGE_SIZE = 12;
 
-export function SupportPage() {
-  const [roleFilter, setRoleFilter] = useUrlState("role", "supporter");
+export function StaffPage() {
+  const [roleFilter, setRoleFilter] = useUrlState("role", "teacher");
   const [search, setSearch] = useUrlState("q", "");
   const [page, setPage] = useUrlNumber("page", 1);
   const navigate = useNavigate();
@@ -36,14 +38,14 @@ export function SupportPage() {
   return (
     <>
       <div className="page-header">
-        <h2>Apoiadores</h2>
-        <p>Apoiadores e patrocinadores do projeto</p>
+        <h2>Staff</h2>
+        <p>Equipe interna do projeto — professores, instrutores e administração</p>
       </div>
 
       <div className="controls-panel">
         <div className="filter-bar">
           <div className="filter-group">
-            <span className="filter-label">Tipo:</span>
+            <span className="filter-label">Função:</span>
             {ROLE_FILTERS.map((opt) => (
               <button
                 key={opt.value}
@@ -74,9 +76,9 @@ export function SupportPage() {
         </div>
       ) : items.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">❤️</div>
-          <h3>Nenhum apoiador ou patrocinador</h3>
-          <p>Membros aprovados com perfil de apoiador ou patrocinador aparecerão aqui.</p>
+          <div className="empty-state-icon">🥋</div>
+          <h3>Nenhum membro encontrado</h3>
+          <p>Membros aprovados com esta função aparecerão aqui.</p>
         </div>
       ) : (
         <>
@@ -96,8 +98,8 @@ export function SupportPage() {
               totalPages={data.totalPages}
               total={data.total}
               pageSize={data.pageSize}
-              itemLabel="conta"
-              itemLabelPlural="contas"
+              itemLabel="membro"
+              itemLabelPlural="membros"
               onChange={setPage}
             />
           )}

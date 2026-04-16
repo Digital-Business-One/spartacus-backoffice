@@ -33,7 +33,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     throw new ApiError(message, res.status, body);
   }
 
-  return res.json() as Promise<T>;
+  // 204 No Content (and any other body-less success) — return undefined instead
+  // of calling res.json(), which would throw "Unexpected end of JSON input".
+  if (res.status === 204 || res.headers.get("content-length") === "0") {
+    return undefined as T;
+  }
+  const text = await res.text();
+  if (!text) return undefined as T;
+  return JSON.parse(text) as T;
 }
 
 export class ApiError extends Error {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ROLES, type RoleDefinition } from "./roles";
+import { RoleIcon } from "./RoleIcon";
 
 interface RoleListProps {
   selected: string | null;
@@ -55,7 +56,9 @@ function RoleItem({
       className={`iam-role-item ${active ? "active" : ""}`}
       onClick={onClick}
     >
-      <span className="iam-role-item-icon">{role.icon}</span>
+      <span className="iam-role-item-icon">
+        <RoleIcon code={role.code} size={18} />
+      </span>
       <span className="iam-role-item-label">{role.label}</span>
       {role.badge && (
         <span className={`iam-role-badge iam-role-badge--${role.badge.toLowerCase()}`}>

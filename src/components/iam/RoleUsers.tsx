@@ -7,6 +7,12 @@ export interface RoleUser {
   email: string;
   photoUrl?: string | null;
   photo_url?: string | null;
+  roles?: string[];
+}
+
+export interface RowError {
+  uid: string;
+  message: string;
 }
 
 interface RoleUsersProps {
@@ -16,6 +22,8 @@ interface RoleUsersProps {
   onAssign: () => void;
   onRemove: (uid: string) => void;
   removingUid: string | null;
+  rowError: RowError | null;
+  onDismissError: () => void;
 }
 
 export function RoleUsers({
@@ -25,6 +33,8 @@ export function RoleUsers({
   onAssign,
   onRemove,
   removingUid,
+  rowError,
+  onDismissError,
 }: RoleUsersProps) {
   return (
     <div className="iam-users-panel">
@@ -48,6 +58,8 @@ export function RoleUsers({
               onSelect={() => onSelectUser(u.uid)}
               onRemove={() => onRemove(u.uid)}
               isRemoving={removingUid === u.uid}
+              error={rowError?.uid === u.uid ? rowError.message : null}
+              onDismissError={onDismissError}
             />
           ))
         )}
@@ -62,15 +74,44 @@ function UserCard({
   onSelect,
   onRemove,
   isRemoving,
+  error,
+  onDismissError,
 }: {
   user: RoleUser;
   roleLabel: string;
   onSelect: () => void;
   onRemove: () => void;
   isRemoving: boolean;
+  error: string | null;
+  onDismissError: () => void;
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const photoUrl = user.photoUrl ?? user.photo_url ?? null;
+
+  if (error) {
+    return (
+      <div className="iam-user-card iam-user-card--error">
+        <div className="iam-user-error-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        </div>
+        <div className="iam-user-error-body">
+          <div className="iam-user-error-title">Não foi possível remover</div>
+          <div className="iam-user-error-msg">{error}</div>
+        </div>
+        <button
+          className="iam-user-error-dismiss"
+          onClick={onDismissError}
+          aria-label="Fechar"
+        >
+          ✕
+        </button>
+      </div>
+    );
+  }
 
   if (confirmOpen) {
     return (
@@ -88,7 +129,10 @@ function UserCard({
           </button>
           <button
             className="btn btn-sm iam-btn-danger"
-            onClick={onRemove}
+            onClick={() => {
+              onRemove();
+              setConfirmOpen(false);
+            }}
             disabled={isRemoving}
           >
             {isRemoving ? "..." : "Remover"}
