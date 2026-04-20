@@ -1,0 +1,174 @@
+import type { GraduationEntry } from "./types";
+
+/**
+ * Graduation badge — stylized vertical BJJ-belt representation.
+ *
+ * The whole badge is the belt color (dominant visual), with vertical
+ * modality letters at the top and black grau stripes near the bottom
+ * (traditional BJJ belt tip representation). Fixed 14×82 so columns
+ * align perfectly.
+ *
+ *   ┌──┐
+ *   │ J│   ← stacked letters at top, small
+ *   │ I│
+ *   │ U│
+ *   │██│   ← belt color fills body
+ *   │██│
+ *   │██│
+ *   │━━│   ← black grau stripes crossing belt
+ *   │━━│
+ *   │──│   ← tiny light tip at bottom
+ *   └──┘
+ */
+
+interface GraduationBadgeProps {
+  modalityId: string;
+  entry: GraduationEntry;
+}
+
+const MODALITY_LABELS: Record<string, string> = {
+  "jiu-jitsu": "JIU",
+  "muay-thai": "MUT",
+  mma: "MMA",
+  capoeira: "CAP",
+};
+
+const BELT_COLORS: Record<string, string> = {
+  // Jiu-Jitsu — adult
+  white: "#f2f2f2",
+  branca: "#f2f2f2",
+  blue: "#1f4fa0",
+  azul: "#1f4fa0",
+  purple: "#5a2c89",
+  roxa: "#5a2c89",
+  brown: "#5a3515",
+  marrom: "#5a3515",
+  black: "#111111",
+  preta: "#111111",
+  // Jiu-Jitsu — youth / kids
+  cinza: "#a8a8a8",
+  gray: "#a8a8a8",
+  amarela: "#f0c83b",
+  yellow: "#f0c83b",
+  laranja: "#ea8226",
+  orange: "#ea8226",
+  verde: "#2ea247",
+  green: "#2ea247",
+  // Capoeira / generic
+  red: "#b83228",
+  vermelha: "#b83228",
+  crua: "#dac6a5",
+  bege: "#dac6a5",
+};
+
+const FALLBACK_COLOR = "#bcbcbc";
+
+const LIGHT_BELTS = new Set([
+  "white", "branca",
+  "yellow", "amarela",
+  "crua", "bege",
+  "cinza", "gray",
+]);
+
+function resolveBelt(belt: string): {
+  primary: string;
+  secondary: string | null;
+  darkText: boolean;
+} {
+  const key = (belt ?? "").trim().toLowerCase();
+  if (!key) return { primary: FALLBACK_COLOR, secondary: null, darkText: true };
+
+  if (key.includes("-") || key.includes("/") || key.includes(" e ")) {
+    const parts = key.split(/[-/]|\s+e\s+/).map((p) => p.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      const a = BELT_COLORS[parts[0]];
+      const b = BELT_COLORS[parts[1]];
+      if (a && b) {
+        return {
+          primary: a,
+          secondary: b,
+          darkText: LIGHT_BELTS.has(parts[0]),
+        };
+      }
+    }
+  }
+
+  return {
+    primary: BELT_COLORS[key] ?? FALLBACK_COLOR,
+    secondary: null,
+    darkText: LIGHT_BELTS.has(key) || !BELT_COLORS[key],
+  };
+}
+
+function modalityLabel(modalityId: string): string {
+  return MODALITY_LABELS[modalityId] ?? modalityId.slice(0, 3).toUpperCase();
+}
+
+export function GraduationBadge({ modalityId, entry }: GraduationBadgeProps) {
+  const label = modalityLabel(modalityId);
+  const { primary, secondary, darkText } = resolveBelt(entry.belt);
+  const degrees = Math.max(0, Math.min(4, entry.degree));
+  const marks = Array.from({ length: degrees }, (_, i) => i);
+  const beltTitle = entry.belt
+    ? `${entry.belt}${entry.degree > 0 ? ` · ${entry.degree}º grau` : ""}`
+    : "Sem graduação";
+
+  const bgStyle: React.CSSProperties = secondary
+    ? {
+        backgroundImage: `linear-gradient(to bottom, ${primary} 0%, ${primary} 50%, ${secondary} 50%, ${secondary} 100%)`,
+      }
+    : { backgroundColor: primary };
+
+  const letterColor = darkText ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.92)";
+
+  return (
+    <div className="grad-badge" title={beltTitle} style={bgStyle}>
+      <div className="grad-badge-letters">
+        {label.split("").map((ch, i) => (
+          <span
+            key={i}
+            className="grad-badge-letter"
+            style={{ color: letterColor }}
+          >
+            {ch}
+          </span>
+        ))}
+      </div>
+      <div className="grad-badge-graus">
+        {marks.map((i) => (
+          <span key={i} className="grad-badge-mark" />
+        ))}
+      </div>
+      <div className="grad-badge-end" />
+    </div>
+  );
+}
+
+interface GraduationBadgeColumnProps {
+  graduation?: Record<string, GraduationEntry> | null;
+}
+
+const MODALITY_ORDER = ["jiu-jitsu", "muay-thai", "mma", "capoeira"];
+
+export function GraduationBadgeColumn({ graduation }: GraduationBadgeColumnProps) {
+  if (!graduation) return null;
+  const entries = MODALITY_ORDER
+    .filter((mid) => graduation[mid])
+    .map((mid) => [mid, graduation[mid]] as const);
+
+  for (const [mid, entry] of Object.entries(graduation)) {
+    if (!MODALITY_ORDER.includes(mid)) {
+      entries.push([mid, entry]);
+    }
+  }
+
+  if (entries.length === 0) return null;
+
+  return (
+    <div className="grad-badge-column">
+      {entries.slice(0, 4).map(([mid, entry]) => (
+        <GraduationBadge key={mid} modalityId={mid} entry={entry} />
+      ))}
+    </div>
+  );
+}

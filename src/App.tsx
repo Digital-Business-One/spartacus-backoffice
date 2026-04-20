@@ -21,14 +21,15 @@ import { AccountsPage } from "./pages/AccountsPage";
 import { AccountDetailPage } from "./pages/AccountDetailPage";
 import { BlockedAccountsPage } from "./pages/BlockedAccountsPage";
 import { StudentsPage } from "./pages/StudentsPage";
-import { TeachersPage } from "./pages/TeachersPage";
-import { InstructorsPage } from "./pages/InstructorsPage";
 import { SupportPage } from "./pages/SupportPage";
+import { StaffPage } from "./pages/StaffPage";
 import { EvaluationPage } from "./pages/EvaluationPage";
+import { FrequenciaPage } from "./pages/FrequenciaPage";
 import { CalendarPage } from "./pages/CalendarPage";
 import { EventsPage } from "./pages/EventsPage";
 import { AulasPage } from "./pages/AulasPage";
 import { ReportsPage } from "./pages/ReportsPage";
+import { IAMPage } from "./pages/IAMPage";
 import { ProjectSettingsPage } from "./pages/ProjectSettingsPage";
 import { ClassWizardPage } from "./pages/ClassWizardPage";
 
@@ -108,17 +109,23 @@ export default function App() {
         ) : (
           <Route element={<Layout user={user!} />}>
             <Route path="/" element={<ProjectHubPage />} />
-            {/* Contas */}
-            <Route path="/em-analise" element={<AccountsPage />} />
-            <Route path="/contas/:uid" element={<AccountDetailPage />} />
-            <Route path="/bloqueados" element={<BlockedAccountsPage />} />
+            {/* Contas — estrutura nova */}
+            <Route path="/onboarding" element={<AccountsPage />} />
             <Route path="/alunos" element={<StudentsPage />} />
-            <Route path="/professores" element={<TeachersPage />} />
-            <Route path="/instrutores" element={<InstructorsPage />} />
-            <Route path="/apoio" element={<SupportPage />} />
-            {/* Redirect antigo /contas → /em-analise */}
-            <Route path="/contas" element={<Navigate to="/em-analise" replace />} />
+            <Route path="/staff" element={<StaffPage />} />
+            <Route path="/apoiadores" element={<SupportPage />} />
+            <Route path="/iam" element={<IAMPage />} />
+            <Route path="/lixeira" element={<BlockedAccountsPage />} />
+            <Route path="/contas/:uid" element={<AccountDetailPage />} />
+            {/* Redirects para rotas antigas */}
+            <Route path="/em-analise" element={<Navigate to="/onboarding" replace />} />
+            <Route path="/bloqueados" element={<Navigate to="/lixeira" replace />} />
+            <Route path="/apoio" element={<Navigate to="/apoiadores" replace />} />
+            <Route path="/professores" element={<Navigate to="/staff?role=teacher" replace />} />
+            <Route path="/instrutores" element={<Navigate to="/staff?role=instructor" replace />} />
+            <Route path="/contas" element={<Navigate to="/onboarding" replace />} />
             {/* Módulos */}
+            <Route path="/frequencia" element={<FrequenciaPage />} />
             <Route path="/avaliacao" element={<EvaluationPage />} />
             <Route path="/calendario" element={<CalendarPage />} />
             <Route path="/eventos" element={<EventsPage />} />

@@ -18,8 +18,8 @@ export function ProjectHubPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.get<Account[]>("/accounts")
-      .then(setAccounts)
+    api.get<{ items: Account[] }>("/accounts?pageSize=50")
+      .then((res) => setAccounts(res.items ?? []))
       .catch(() => setAccounts([]))
       .finally(() => setAccountsLoading(false));
   }, []);
