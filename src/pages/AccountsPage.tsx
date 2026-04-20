@@ -182,7 +182,7 @@ export function AccountsPage() {
         <input
           type="text"
           className="search-input"
-          placeholder="Buscar por nome..."
+          placeholder="Buscar por nome ou e-mail..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -190,6 +190,7 @@ export function AccountsPage() {
 
       <div className="list-toolbar">
         <div className="list-toolbar-filters">
+          {/* Status filter — only on pending tab */}
           {currentTab === "pending" && (
             <div className="filter-group">
               <span className="filter-label">Status:</span>
@@ -232,6 +233,7 @@ export function AccountsPage() {
 
         <div className="list-toolbar-divider" />
 
+        {/* Sort */}
         <div className="filter-group">
           <span className="filter-label">Ordenar:</span>
           <button
