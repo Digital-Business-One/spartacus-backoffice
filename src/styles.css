@@ -3651,6 +3651,502 @@ input, select, button, textarea {
   color: var(--text-muted);
 }
 
+/* ── RFC-14: Dashboard de Frequência ──────────────────────────────────────── */
+
+.freq-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.freq-header h2 {
+  margin: 0;
+}
+.freq-header p {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+.freq-date {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.freq-date-label {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.freq-date-value {
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+/* Turma selector */
+.freq-turma-selector {
+  margin-bottom: 1.25rem;
+}
+.freq-turma-btn {
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  gap: 1rem;
+  padding: 0 1rem;
+  height: 68px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  color: inherit;
+  transition: all 0.2s var(--ease-smooth);
+}
+.freq-turma-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.freq-turma-accent {
+  width: 3px;
+  border-radius: 2px;
+  margin: 0.7rem 0;
+  flex-shrink: 0;
+  align-self: stretch;
+}
+.freq-turma-label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.freq-turma-modality {
+  font-family: var(--font-heading);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.freq-turma-name {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.freq-turma-divider {
+  width: 1px;
+  margin: 1rem 0;
+  background: rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+.freq-turma-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  text-align: left;
+}
+.freq-turma-time {
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.freq-turma-teacher {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+.freq-turma-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+.freq-turma-stats > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.freq-turma-stat-value {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.freq-turma-stat-label {
+  color: var(--text-muted);
+  font-size: 0.65rem;
+}
+.freq-turma-chevron {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+.freq-turma-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown */
+.freq-turma-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+.freq-turma-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: none;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  transition: background 0.15s;
+}
+.freq-turma-option:first-child {
+  border-top: none;
+}
+.freq-turma-option:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.04);
+}
+.freq-turma-option-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.freq-turma-option-body {
+  flex: 1;
+  min-width: 0;
+}
+.freq-turma-option-body > div {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.freq-turma-option-meta {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* "Show all classes" toggle inside dropdown */
+.freq-turma-show-all {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  background: none;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  color: var(--text-muted);
+}
+.freq-turma-show-all:hover {
+  color: var(--gold);
+}
+.freq-turma-show-all-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.freq-turma-show-all-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+/* Dimmed options (non-today classes) */
+.freq-turma-option--dimmed {
+  opacity: 0.55;
+}
+.freq-turma-option--dimmed:hover {
+  opacity: 0.8;
+}
+.freq-turma-name--dimmed {
+  color: var(--text-muted) !important;
+}
+
+/* Retroactive hint banner */
+.freq-retroactive-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  background: rgba(245, 158, 11, 0.06);
+  color: #f59e0b;
+  font-size: 0.82rem;
+}
+.freq-retroactive-hint span {
+  color: var(--text-muted);
+}
+.freq-retroactive-hint strong {
+  color: var(--text-primary);
+}
+
+/* Kanban */
+.freq-kanban {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.freq-col {
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  min-height: 400px;
+}
+.freq-col--muted {
+  border-color: rgba(148, 163, 184, 0.25);
+  background: rgba(148, 163, 184, 0.04);
+}
+.freq-col--gold {
+  border-color: rgba(198, 163, 78, 0.3);
+  background: rgba(198, 163, 78, 0.04);
+}
+.freq-col--success {
+  border-color: rgba(76, 175, 80, 0.3);
+  background: rgba(76, 175, 80, 0.04);
+}
+
+.freq-col-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.freq-col-icon {
+  display: inline-flex;
+  align-items: center;
+}
+.freq-col-label {
+  flex: 1;
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.freq-col--muted .freq-col-label,
+.freq-col--muted .freq-col-icon { color: #94a3b8; }
+.freq-col--gold .freq-col-label,
+.freq-col--gold .freq-col-icon { color: var(--gold); }
+.freq-col--success .freq-col-label,
+.freq-col--success .freq-col-icon { color: var(--success); }
+.freq-col-count {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 99px;
+  font-variant-numeric: tabular-nums;
+}
+.freq-col--muted .freq-col-count {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+}
+.freq-col--gold .freq-col-count {
+  background: rgba(198, 163, 78, 0.15);
+  color: var(--gold);
+}
+.freq-col--success .freq-col-count {
+  background: rgba(76, 175, 80, 0.15);
+  color: var(--success);
+}
+
+.freq-col-body {
+  flex: 1;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+  max-height: calc(100vh - 340px);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.freq-col-body::-webkit-scrollbar { width: 6px; }
+.freq-col-body::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.freq-col-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1rem;
+  color: var(--text-muted);
+  opacity: 0.5;
+  text-align: center;
+}
+.freq-col-empty p {
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+/* Person card */
+.freq-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.freq-card-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2a2d35, #1e2028);
+  border: 1.5px solid rgba(198, 163, 78, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--gold);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.freq-card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.freq-card-body {
+  flex: 1;
+  min-width: 0;
+}
+.freq-card-name-line {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.freq-card-name {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.freq-card-role-chip {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background: rgba(198, 163, 78, 0.15);
+  color: var(--gold);
+  text-transform: uppercase;
+}
+.freq-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.freq-card-qr {
+  font-family: var(--font-heading);
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.05rem 0.35rem;
+  border-radius: 3px;
+  background: rgba(198, 163, 78, 0.15);
+  color: var(--gold);
+}
+.freq-card-guardian {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 2px;
+}
+
+.freq-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.freq-card-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s, opacity 0.12s;
+}
+.freq-card-btn:hover:not(:disabled) { transform: scale(1.03); }
+.freq-card-btn:active:not(:disabled) { transform: scale(0.97); }
+.freq-card-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.freq-card-btn--primary {
+  background: var(--gold);
+  color: #0B0D12;
+}
+.freq-card-btn--success {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border-color: rgba(34, 197, 94, 0.3);
+}
+.freq-card-btn--danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.freq-card-check {
+  color: var(--success);
+  display: inline-flex;
+}
+
+@media (max-width: 1100px) {
+  .freq-kanban {
+    grid-template-columns: 1fr;
+  }
+  .freq-col-body {
+    max-height: 500px;
+  }
+}
+
 /* ── IAM breadcrumb (RFC-13) ──────────────────────────────────────────────── */
 
 .iam-breadcrumb {

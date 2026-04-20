@@ -24,6 +24,7 @@ import { StudentsPage } from "./pages/StudentsPage";
 import { SupportPage } from "./pages/SupportPage";
 import { StaffPage } from "./pages/StaffPage";
 import { EvaluationPage } from "./pages/EvaluationPage";
+import { FrequenciaPage } from "./pages/FrequenciaPage";
 import { CalendarPage } from "./pages/CalendarPage";
 import { EventsPage } from "./pages/EventsPage";
 import { AulasPage } from "./pages/AulasPage";
@@ -124,6 +125,7 @@ export default function App() {
             <Route path="/instrutores" element={<Navigate to="/staff?role=instructor" replace />} />
             <Route path="/contas" element={<Navigate to="/onboarding" replace />} />
             {/* Módulos */}
+            <Route path="/frequencia" element={<FrequenciaPage />} />
             <Route path="/avaliacao" element={<EvaluationPage />} />
             <Route path="/calendario" element={<CalendarPage />} />
             <Route path="/eventos" element={<EventsPage />} />

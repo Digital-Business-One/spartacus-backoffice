@@ -4,6 +4,8 @@ import { auth } from "../lib/firebase";
 import { api } from "../lib/api";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+const PROJECT_ID =
+  import.meta.env.VITE_FIREBASE_PROJECT_ID ?? "spartacus-artes-marciais";
 
 interface Props {
   email: string;
@@ -21,7 +23,10 @@ export function PendingEmailPage({ email, onVerified }: Props) {
     try {
       const res = await fetch(`${BASE_URL}/auth/resend-verification`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Project-Id": PROJECT_ID,
+        },
         body: JSON.stringify({ email }),
       });
       if (res.ok) {
