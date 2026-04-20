@@ -41,8 +41,9 @@ export function DonationsTab({ uid }: DonationsTabProps) {
       setLoading(true);
       setError(null);
       try {
+        const year = new Date().getFullYear();
         const result = await api.get<DonationHistoryResponse>(
-          `/accounts/${uid}/donations/history`,
+          `/accounts/${uid}/donations/history?year=${year}`,
         );
         if (!cancelled) setItems(result.donations);
       } catch (err: unknown) {
