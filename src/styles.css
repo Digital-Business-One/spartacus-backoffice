@@ -506,6 +506,21 @@ input, select, button, textarea {
   max-width: calc(940px + 250px);
 }
 
+/* Opt-in: pages that fill the remaining horizontal space.
+   Sidebar closed → full viewport width.
+   Sidebar open  → viewport minus sidebar (250px). */
+.main-content-v2:has(> .freq-fullwidth) {
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+}
+.main-content-v2--with-sidebar:has(> .freq-fullwidth) {
+  max-width: none;
+  margin-left: 250px;
+  margin-right: 0;
+  width: calc(100% - 250px);
+}
+
 /* ── Hub Page ─────────────────────────────────────────────────────────────── */
 
 .hub-page {
@@ -3931,10 +3946,11 @@ input, select, button, textarea {
 .freq-col {
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
+  border-radius: 12px 12px 0 0;
   overflow: hidden;
   border: 1px solid var(--border);
-  min-height: 400px;
+  border-bottom: none;
+  min-height: calc(100vh - 280px);
 }
 .freq-col--muted {
   border-color: rgba(148, 163, 184, 0.25);
@@ -4001,15 +4017,6 @@ input, select, button, textarea {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  overflow-y: auto;
-  max-height: calc(100vh - 340px);
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
-}
-.freq-col-body::-webkit-scrollbar { width: 6px; }
-.freq-col-body::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
 }
 
 .freq-col-empty {
@@ -4159,8 +4166,8 @@ input, select, button, textarea {
   .freq-kanban {
     grid-template-columns: 1fr;
   }
-  .freq-col-body {
-    max-height: 500px;
+  .freq-col {
+    min-height: auto;
   }
 }
 
