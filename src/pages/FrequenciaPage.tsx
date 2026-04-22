@@ -285,7 +285,7 @@ export function FrequenciaPage() {
   const colConfirmed = students.filter((s) => s.status === "confirmed");
 
   return (
-    <>
+    <div className="freq-fullwidth">
       <div className="freq-header">
         <div>
           <h2 className="settings-title">FREQUÊNCIA</h2>
@@ -473,7 +473,7 @@ export function FrequenciaPage() {
           </div>
         </>
       )}
-    </>
+    </div>
   );
 }
 
