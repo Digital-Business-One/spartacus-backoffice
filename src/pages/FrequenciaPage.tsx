@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { api } from "../lib/api";
+import { api, ApiError } from "../lib/api";
 import { useClasses, type ClassData } from "../hooks/useClasses";
 
 /* ── Types ──────────────────────────────────────────────────────────────── */
@@ -213,17 +213,50 @@ export function FrequenciaPage() {
     ) => {
       if (!selectedClassId || !dashboard) return;
       setActingOn(userId);
-      try {
+
+      async function send(force: boolean) {
         await api.post(`/attendance/${action}`, {
           classId: selectedClassId,
           userId,
-          aulaId: dashboard.aulaId,
+          aulaId: dashboard?.aulaId,
           source: "manual",
+          force,
         });
-        // Optimistic: refetch
+      }
+
+      try {
+        await send(false);
         await fetchDashboard(selectedClassId);
       } catch (err) {
-        console.error(`[FrequenciaPage] ${action} failed:`, err);
+        const isNoSchedule =
+          err instanceof ApiError &&
+          err.status === 400 &&
+          typeof err.message === "string" &&
+          err.message.includes("Sem aula agendada");
+        if (isNoSchedule) {
+          const verb = action === "confirm" ? "registrar" : "rejeitar";
+          const ok = window.confirm(
+            `Esta turma não tem aula agendada para hoje. ` +
+            `Deseja ${verb} a presença retroativamente?`,
+          );
+          if (!ok) return;
+          try {
+            await send(true);
+            await fetchDashboard(selectedClassId);
+          } catch (retryErr) {
+            const msg =
+              retryErr instanceof Error
+                ? retryErr.message
+                : "Falha ao registrar presença retroativa.";
+            window.alert(msg);
+          }
+        } else {
+          const msg =
+            err instanceof Error
+              ? err.message
+              : "Falha ao processar a ação.";
+          window.alert(msg);
+        }
       } finally {
         setActingOn(null);
       }
