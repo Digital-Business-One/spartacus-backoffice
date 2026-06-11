@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, ApiError } from "../lib/api";
 import { useClasses, type ClassData } from "../hooks/useClasses";
+import { GraduationBadgeColumn } from "../components/account/GraduationBadge";
+import type { GraduationEntry } from "../components/account/types";
 
 /* ── Types ──────────────────────────────────────────────────────────────── */
 
@@ -16,6 +18,7 @@ interface StudentCard {
   roles: string[];
   isDependent: boolean;
   guardianName?: string | null;
+  graduation?: Record<string, GraduationEntry> | null;
   status: AttendanceStatus;
   source?: string | null;
 }
@@ -596,6 +599,7 @@ function PersonCard({
           <div className="freq-card-guardian">resp. {student.guardianName}</div>
         )}
       </div>
+      <GraduationBadgeColumn graduation={student.graduation} />
       <div className="freq-card-actions">{children}</div>
     </div>
   );
