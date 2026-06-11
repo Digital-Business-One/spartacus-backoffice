@@ -25,6 +25,7 @@ import { SupportPage } from "./pages/SupportPage";
 import { StaffPage } from "./pages/StaffPage";
 import { EvaluationPage } from "./pages/EvaluationPage";
 import { FrequenciaPage } from "./pages/FrequenciaPage";
+import { DoacoesPage } from "./pages/DoacoesPage";
 import { IAMPage } from "./pages/IAMPage";
 import { ProjectSettingsPage } from "./pages/ProjectSettingsPage";
 import { ClassWizardPage } from "./pages/ClassWizardPage";
@@ -122,6 +123,7 @@ export default function App() {
             <Route path="/contas" element={<Navigate to="/onboarding" replace />} />
             {/* Módulos */}
             <Route path="/frequencia" element={<FrequenciaPage />} />
+            <Route path="/doacoes" element={<DoacoesPage />} />
             <Route path="/avaliacao" element={<EvaluationPage />} />
             {/* Conta */}
             <Route path="/update-password" element={<ChangePasswordPage />} />
