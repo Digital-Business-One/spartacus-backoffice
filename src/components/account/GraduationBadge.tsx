@@ -108,15 +108,22 @@ export function GraduationBadge({ modalityId, entry }: GraduationBadgeProps) {
   const degrees = Math.max(0, Math.min(4, entry.degree));
   const stripeCol = darkText ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.75)";
   const letterCol = darkText ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.55)";
-  const beltTitle = entry.belt
-    ? `${entry.belt}${entry.degree > 0 ? ` · ${entry.degree}º grau` : ""}`
-    : "Sem graduação";
+  const pending = entry.status === "pending";
+  const rejected = entry.status === "rejected";
+  const beltTitle =
+    (entry.belt
+      ? `${entry.belt}${entry.degree > 0 ? ` · ${entry.degree}º grau` : ""}`
+      : "Sem graduação") +
+    (pending ? " · aguardando aprovação" : rejected ? " · reprovada" : "");
 
   const shadowId = `grad-shadow-${uid}`;
   const fillId = `grad-fill-${uid}`;
 
   return (
-    <div className="grad-badge" title={beltTitle}>
+    <div
+      className={`grad-badge${pending ? " grad-badge--pending" : ""}${rejected ? " grad-badge--rejected" : ""}`}
+      title={beltTitle}
+    >
       <svg width="18" height="104" viewBox="0 0 18 104" className="grad-badge-svg">
         <defs>
           <filter id={shadowId}>

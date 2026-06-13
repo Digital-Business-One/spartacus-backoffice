@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+import { api } from "../../lib/api";
 import { GraduationBadgeColumn } from "./GraduationBadge";
 import {
   AccountDetail,
@@ -7,12 +9,51 @@ import {
   calcAge,
 } from "./types";
 
+const PencilIcon = () => (
+  <svg
+    className="nickname-inline-pencil"
+    width="12"
+    height="12"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />
+  </svg>
+);
+
 interface AccountHeaderProps {
   account: AccountDetail;
   isCurrentUser: boolean;
   onSuspend: () => void;
-  suspendLoading: boolean;
+  onWarn: () => void;
+  canWarn?: boolean;
+  canAssignNickname?: boolean;
+  onNicknameSaved?: () => void;
 }
+
+const MoreVerticalIcon = () => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="5" r="1" />
+    <circle cx="12" cy="12" r="1" />
+    <circle cx="12" cy="19" r="1" />
+  </svg>
+);
 
 /**
  * Header card of the account detail page (RFC-12).
@@ -26,8 +67,64 @@ export function AccountHeader({
   account,
   isCurrentUser,
   onSuspend,
-  suspendLoading,
+  onWarn,
+  canWarn = false,
+  canAssignNickname = false,
+  onNicknameSaved,
 }: AccountHeaderProps) {
+  const [editingNick, setEditingNick] = useState(false);
+  const [nickValue, setNickValue] = useState(account.nickname ?? "");
+  const [nickSaving, setNickSaving] = useState(false);
+  const savingRef = useRef(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const h = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [menuOpen]);
+
+  const canEditNick = canAssignNickname && !isCurrentUser;
+
+  function startEditNick() {
+    setNickValue(account.nickname ?? "");
+    setEditingNick(true);
+  }
+
+  function cancelEditNick() {
+    // Reset to original so a trailing onBlur commit becomes a no-op.
+    setNickValue(account.nickname ?? "");
+    setEditingNick(false);
+  }
+
+  async function commitNick() {
+    if (savingRef.current) return;
+    const value = nickValue.trim();
+    if (value === (account.nickname ?? "")) {
+      setEditingNick(false);
+      return;
+    }
+    savingRef.current = true;
+    setNickSaving(true);
+    try {
+      await api.patch(`/accounts/${account.uid}/nickname`, { nickname: value });
+      setEditingNick(false);
+      onNicknameSaved?.();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao salvar apelido";
+      window.alert(msg);
+    } finally {
+      savingRef.current = false;
+      setNickSaving(false);
+    }
+  }
+
   const initials = account.name
     .split(" ")
     .map((w) => w[0])
@@ -73,7 +170,50 @@ export function AccountHeader({
         )}
 
         <div className="account-detail-identity">
-          <h2 className="account-detail-name">{account.name}</h2>
+          <h2 className="account-detail-name">
+            <span>{account.name}</span>
+            {editingNick ? (
+              <span className="nickname-inline">
+                <span className="nickname-inline-sep">/</span>
+                <input
+                  className="nickname-inline-input"
+                  type="text"
+                  maxLength={30}
+                  placeholder="apelido"
+                  value={nickValue}
+                  autoFocus
+                  disabled={nickSaving}
+                  onChange={(e) => setNickValue(e.target.value)}
+                  onBlur={commitNick}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") commitNick();
+                    if (e.key === "Escape") cancelEditNick();
+                  }}
+                />
+              </span>
+            ) : account.nickname ? (
+              <button
+                type="button"
+                className="nickname-inline-display"
+                onClick={canEditNick ? startEditNick : undefined}
+                title={canEditNick ? "Editar apelido" : undefined}
+                disabled={!canEditNick}
+              >
+                <span className="nickname-inline-sep">/</span> {account.nickname}
+                {canEditNick && <PencilIcon />}
+              </button>
+            ) : (
+              canEditNick && (
+                <button
+                  type="button"
+                  className="nickname-inline-add"
+                  onClick={startEditNick}
+                >
+                  <PencilIcon /> apelido
+                </button>
+              )
+            )}
+          </h2>
           {account.email && (
             <p className="account-detail-email">{account.email}</p>
           )}
@@ -118,14 +258,43 @@ export function AccountHeader({
 
         <div className="account-detail-header-right">
           <GraduationBadgeColumn graduation={account.graduation} />
-          {showSuspend && (
-            <button
-              className="btn btn-sm detail-btn--danger"
-              onClick={onSuspend}
-              disabled={suspendLoading}
-            >
-              {suspendLoading ? "..." : "Suspender"}
-            </button>
+          {(canWarn || showSuspend) && (
+            <div className="account-actions-menu" ref={menuRef}>
+              <button
+                className="account-actions-trigger"
+                onClick={() => setMenuOpen((v) => !v)}
+                aria-label="Mais ações"
+                title="Mais ações"
+              >
+                <MoreVerticalIcon />
+              </button>
+              {menuOpen && (
+                <div className="account-actions-dropdown">
+                  {canWarn && (
+                    <button
+                      className="account-actions-item"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        onWarn();
+                      }}
+                    >
+                      Advertir
+                    </button>
+                  )}
+                  {showSuspend && (
+                    <button
+                      className="account-actions-item account-actions-item--danger"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        onSuspend();
+                      }}
+                    >
+                      Suspender
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

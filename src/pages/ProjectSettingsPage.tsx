@@ -5,7 +5,7 @@ import { api } from "../lib/api";
 import { DatePicker } from "../components/DatePicker";
 import { ClassWizardDrawer } from "../components/class-wizard/ClassWizardDrawer";
 
-type SettingsTab = "cadastro" | "faixas" | "turmas" | "doacoes";
+type SettingsTab = "cadastro" | "faixas" | "modalidades" | "turmas" | "doacoes";
 
 // ── Icons (Feather-style, stroke-only) ──────────────────────────────────────
 
@@ -151,6 +151,7 @@ const I = {
 const TABS: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
   { id: "cadastro", label: "Cadastro", icon: I.building },
   { id: "faixas", label: "Faixas Etárias", icon: I.users },
+  { id: "modalidades", label: "Modalidades", icon: I.tag },
   { id: "turmas", label: "Turmas", icon: I.award },
   { id: "doacoes", label: "Doações", icon: I.gift },
 ];
@@ -265,6 +266,7 @@ export function ProjectSettingsPage() {
             onReactivateClass={reactivateClass}
           />
         )}
+        {activeTab === "modalidades" && <ModalidadesTab />}
         {activeTab === "doacoes" && <DoacoesTab />}
       </div>
 
@@ -1068,6 +1070,194 @@ function TurmasTab({
 
 const PROJECT_ID =
   import.meta.env.VITE_FIREBASE_PROJECT_ID ?? "spartacus-artes-marciais";
+
+interface Modality {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+function slugify(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
+function ModalidadesTab() {
+  const [modalities, setModalities] = useState<Modality[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newName, setNewName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+
+  const fetchModalities = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await api.get<{ modalities: Modality[] }>(
+        `/projects/${PROJECT_ID}/modalities`,
+      );
+      setModalities(data.modalities ?? []);
+    } catch {
+      setModalities([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchModalities();
+  }, [fetchModalities]);
+
+  async function addModality() {
+    const name = newName.trim();
+    if (!name) return;
+    setBusy(true);
+    try {
+      await api.post(`/projects/${PROJECT_ID}/modalities`, {
+        name,
+        slug: slugify(name),
+      });
+      setNewName("");
+      await fetchModalities();
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Erro ao adicionar.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveEdit(id: string) {
+    const name = editName.trim();
+    if (!name) {
+      setEditingId(null);
+      return;
+    }
+    setBusy(true);
+    try {
+      await api.patch(`/projects/${PROJECT_ID}/modalities/${id}`, { name });
+      setEditingId(null);
+      await fetchModalities();
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Erro ao salvar.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeModality(m: Modality) {
+    if (!window.confirm(`Desativar a modalidade "${m.name}"?`)) return;
+    setBusy(true);
+    try {
+      await api.delete(`/projects/${PROJECT_ID}/modalities/${m.id}`);
+      await fetchModalities();
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Erro ao desativar.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="hub-loading-inline">
+        <span className="loading-spinner" />
+        <span>Carregando modalidades...</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="settings-card">
+      <h3 className="settings-card-title">Modalidades do projeto</h3>
+      <p className="settings-card-desc">
+        As modalidades que o projeto oferece. Usadas em turmas e no sistema de
+        graduações.
+      </p>
+
+      <div className="modality-list">
+        {modalities.map((m) => (
+          <div key={m.id} className="modality-row">
+            {editingId === m.id ? (
+              <>
+                <input
+                  className="modality-input"
+                  value={editName}
+                  autoFocus
+                  onChange={(e) => setEditName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveEdit(m.id);
+                    if (e.key === "Escape") setEditingId(null);
+                  }}
+                />
+                <button
+                  className="btn btn-sm btn-primary"
+                  disabled={busy}
+                  onClick={() => saveEdit(m.id)}
+                >
+                  Salvar
+                </button>
+                <button
+                  className="btn btn-sm btn-outline"
+                  onClick={() => setEditingId(null)}
+                >
+                  Cancelar
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="modality-name">{m.name}</span>
+                <span className="modality-slug">{m.slug}</span>
+                <button
+                  className="btn btn-sm btn-outline"
+                  onClick={() => {
+                    setEditingId(m.id);
+                    setEditName(m.name);
+                  }}
+                >
+                  Editar
+                </button>
+                <button
+                  className="btn btn-sm detail-btn--danger"
+                  disabled={busy}
+                  onClick={() => removeModality(m)}
+                >
+                  Desativar
+                </button>
+              </>
+            )}
+          </div>
+        ))}
+        {modalities.length === 0 && (
+          <p className="modality-empty">Nenhuma modalidade cadastrada.</p>
+        )}
+      </div>
+
+      <div className="modality-add">
+        <input
+          className="modality-input"
+          placeholder="Nova modalidade (ex.: Boxe)"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") addModality();
+          }}
+        />
+        <button
+          className="btn btn-sm btn-primary"
+          disabled={busy || !newName.trim()}
+          onClick={addModality}
+        >
+          Adicionar
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function DoacoesTab() {
   const [config, setConfig] = useState<DonationConfig | null>(null);

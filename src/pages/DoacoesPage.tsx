@@ -10,6 +10,7 @@ type DonationStatus = "none" | "pledged" | "received";
 interface StudentCard {
   userId: string;
   name: string;
+  nickname?: string | null;
   initials: string;
   age?: number | null;
   photoUrl?: string | null;
@@ -178,6 +179,27 @@ export function DoacoesPage() {
     [fetchDashboard],
   );
 
+  const handleUndo = useCallback(
+    async (s: StudentCard) => {
+      if (!s.donationId) return;
+      setActingOn(s.userId);
+      try {
+        await api.post(
+          `/donations/${encodeURIComponent(s.donationId)}/undo-validation`,
+          {},
+        );
+        await fetchDashboard();
+      } catch (err) {
+        const msg =
+          err instanceof Error ? err.message : "Falha ao desfazer aprovação.";
+        window.alert(msg);
+      } finally {
+        setActingOn(null);
+      }
+    },
+    [fetchDashboard],
+  );
+
   const students = dashboard?.students ?? [];
   const colNone = students.filter((s) => s.status === "none");
   const colPledged = students.filter((s) => s.status === "pledged");
@@ -262,10 +284,20 @@ export function DoacoesPage() {
           icon={<IcCheckCircle />}
           cards={colReceived}
           loading={loading}
-          renderActions={() => (
-            <span className="freq-card-check">
-              <IcCheck />
-            </span>
+          renderActions={(s) => (
+            <>
+              <span className="freq-card-check">
+                <IcCheck />
+              </span>
+              <button
+                className="freq-card-undo"
+                title="Desfazer aprovação"
+                onClick={() => handleUndo(s)}
+                disabled={actingOn === s.userId}
+              >
+                <IcXCircle />
+              </button>
+            </>
           )}
         />
       </div>
@@ -364,7 +396,7 @@ function PersonCard({
       </div>
       <div className="freq-card-body">
         <div className="freq-card-name-line">
-          <span className="freq-card-name">{student.name}</span>
+          <span className="freq-card-name">{student.nickname ? `${student.name} / ${student.nickname}` : student.name}</span>
         </div>
         <div className="freq-card-meta">
           {student.age != null && <span>{student.age} anos</span>}

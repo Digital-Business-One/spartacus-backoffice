@@ -26,6 +26,7 @@ import { StaffPage } from "./pages/StaffPage";
 import { EvaluationPage } from "./pages/EvaluationPage";
 import { FrequenciaPage } from "./pages/FrequenciaPage";
 import { DoacoesPage } from "./pages/DoacoesPage";
+import { GraduacoesPage } from "./pages/GraduacoesPage";
 import { IAMPage } from "./pages/IAMPage";
 import { ProjectSettingsPage } from "./pages/ProjectSettingsPage";
 import { ClassWizardPage } from "./pages/ClassWizardPage";
@@ -124,6 +125,7 @@ export default function App() {
             {/* Módulos */}
             <Route path="/frequencia" element={<FrequenciaPage />} />
             <Route path="/doacoes" element={<DoacoesPage />} />
+            <Route path="/graduacoes" element={<GraduacoesPage />} />
             <Route path="/avaliacao" element={<EvaluationPage />} />
             {/* Conta */}
             <Route path="/update-password" element={<ChangePasswordPage />} />

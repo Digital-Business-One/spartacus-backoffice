@@ -170,6 +170,7 @@ const NAV_GROUPS: NavGroup[] = [
     children: [
       { to: "/frequencia", label: "Frequência", icon: Icons.attendance },
       { to: "/doacoes", label: "Doações", icon: Icons.heart },
+      { to: "/graduacoes", label: "Graduações", icon: Icons.award },
     ],
   },
   {

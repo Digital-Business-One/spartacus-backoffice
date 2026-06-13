@@ -11,6 +11,7 @@ type AttendanceStatus = "absent" | "registered" | "confirmed";
 interface StudentCard {
   userId: string;
   name: string;
+  nickname?: string | null;
   initials: string;
   age?: number | null;
   ageCategory?: string | null;
@@ -20,6 +21,7 @@ interface StudentCard {
   guardianName?: string | null;
   graduation?: Record<string, GraduationEntry> | null;
   status: AttendanceStatus;
+  attendanceId?: string | null;
   source?: string | null;
 }
 
@@ -267,6 +269,27 @@ export function FrequenciaPage() {
     [selectedClassId, dashboard, fetchDashboard],
   );
 
+  const handleUndo = useCallback(
+    async (s: StudentCard) => {
+      if (!s.attendanceId || !selectedClassId) return;
+      setActingOn(s.userId);
+      try {
+        await api.post(
+          `/attendance/${encodeURIComponent(s.attendanceId)}/undo-validation`,
+          {},
+        );
+        await fetchDashboard(selectedClassId);
+      } catch (err) {
+        const msg =
+          err instanceof Error ? err.message : "Falha ao desfazer confirmação.";
+        window.alert(msg);
+      } finally {
+        setActingOn(null);
+      }
+    },
+    [selectedClassId, fetchDashboard],
+  );
+
   const selectedClass =
     allActive.find((c) => c.id === selectedClassId);
   const selectedIsToday = selectedClass
@@ -499,10 +522,20 @@ export function FrequenciaPage() {
               tone="success"
               icon={<IcCheckCircle />}
               cards={colConfirmed}
-              renderActions={() => (
-                <span className="freq-card-check">
-                  <IcCheck />
-                </span>
+              renderActions={(s) => (
+                <>
+                  <span className="freq-card-check">
+                    <IcCheck />
+                  </span>
+                  <button
+                    className="freq-card-undo"
+                    title="Desfazer confirmação"
+                    onClick={() => handleUndo(s)}
+                    disabled={actingOn === s.userId}
+                  >
+                    <IcXCircle />
+                  </button>
+                </>
               )}
               loading={loading}
             />
@@ -577,7 +610,7 @@ function PersonCard({
       </div>
       <div className="freq-card-body">
         <div className="freq-card-name-line">
-          <span className="freq-card-name">{student.name}</span>
+          <span className="freq-card-name">{student.nickname ? `${student.name} / ${student.nickname}` : student.name}</span>
           {isTeacher && <span className="freq-card-role-chip">Prof</span>}
         </div>
         <div className="freq-card-meta">

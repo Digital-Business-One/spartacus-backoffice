@@ -2,13 +2,14 @@ import { useState } from "react";
 import { AccountAvatar } from "./AccountAvatar";
 import { GraduationBadgeColumn } from "./GraduationBadge";
 import type { GraduationEntry } from "./types";
-import { ROLE_LABELS, STATUS_LABELS, calcAge } from "./types";
+import { ROLE_LABELS, STATUS_LABELS, calcAge, displayName } from "./types";
 
 // ── Types (matching enriched AccountOut from the backend) ───────────────────
 
 export interface AccountListItem {
   uid: string;
   name: string;
+  nickname?: string | null;
   email: string;
   roles: string[];
   status: string;
@@ -49,6 +50,7 @@ interface AccountAction {
 interface NormAccount {
   uid: string;
   name: string;
+  nickname: string | null;
   email: string;
   roles: string[];
   status: string;
@@ -70,6 +72,7 @@ function norm(a: AccountListItem): NormAccount {
   return {
     uid: a.uid,
     name: a.name,
+    nickname: a.nickname ?? null,
     email: a.email,
     roles: a.roles ?? [],
     status: a.status,
@@ -192,7 +195,7 @@ function StandaloneCard({
       <div className="account-card-header">
         <AccountAvatar name={a.name} photoUrl={a.photoUrl} />
         <div className="account-info">
-          <div className="account-name">{a.name}</div>
+          <div className="account-name">{displayName(a.name, a.nickname)}</div>
           <div className="account-email">{a.email}</div>
           <div className="account-meta">
             {a.roles.map((r) => (
@@ -273,7 +276,7 @@ function GuardianCard({
       <div className="account-card-header" onClick={() => onDetail(a.uid)} style={{ cursor: "pointer" }}>
         <AccountAvatar name={a.name} photoUrl={a.photoUrl} />
         <div className="account-info">
-          <div className="account-name">{a.name}</div>
+          <div className="account-name">{displayName(a.name, a.nickname)}</div>
           <div className="account-email">{a.email}</div>
           <div className="account-meta">
             {a.roles.map((r) => (
@@ -353,7 +356,7 @@ function DepRow({
       <div className="dep-row-header">
         <AccountAvatar name={a.name} photoUrl={a.photoUrl} size="sm" />
         <div className="dep-row-info">
-          <span className="dep-row-name">{a.name}</span>
+          <span className="dep-row-name">{displayName(a.name, a.nickname)}</span>
           {age !== null && (
             <span className="dep-row-age">{age} anos{ageRange ? ` · ${ageRange}` : ""}</span>
           )}
