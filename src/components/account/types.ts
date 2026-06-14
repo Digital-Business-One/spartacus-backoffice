@@ -37,6 +37,8 @@ export interface GraduationEntry {
   belt: string;
   degree: number;
   prajied?: number | null;
+  status?: "pending" | "approved" | "rejected";
+  lockedByStudent?: boolean;
 }
 
 export interface Competition {
@@ -50,6 +52,7 @@ export interface AccountDetail {
   // Identity
   uid: string;
   name: string;
+  nickname?: string | null;
   email?: string | null;
   emailVerified: boolean;
   taxId?: string | null;
@@ -148,6 +151,11 @@ export const RELATIONSHIP_LABELS: Record<string, string> = {
   guardian: "Responsável legal",
   other: "Outro",
 };
+
+/** Padrão de exibição: 'Nome / apelido' (ex.: 'Júnior Silva / Montanha'). */
+export function displayName(name: string, nickname?: string | null): string {
+  return nickname ? `${name} / ${nickname}` : name;
+}
 
 export function calcAge(birthDate?: string | null): number | null {
   if (!birthDate) return null;

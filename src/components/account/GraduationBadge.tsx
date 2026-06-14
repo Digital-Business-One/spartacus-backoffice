@@ -1,24 +1,21 @@
+import { useId } from "react";
 import type { GraduationEntry } from "./types";
 
 /**
- * Graduation badge — stylized vertical BJJ-belt representation.
+ * Graduation badge — vertical bookmark-style belt ribbon (prototype visual).
  *
- * The whole badge is the belt color (dominant visual), with vertical
- * modality letters at the top and black grau stripes near the bottom
- * (traditional BJJ belt tip representation). Fixed 14×82 so columns
- * align perfectly.
+ * SVG ribbon 18×104: flat top anchored flush to the card's top border,
+ * chevron-cut pointed bottom, drop shadow, shine on the upper half, center
+ * fold line, grau tick marks near the tip and vertical modality initials.
  *
- *   ┌──┐
- *   │ J│   ← stacked letters at top, small
- *   │ I│
+ *   ┌──┐  ← flush with card top border
+ *   │ J│
+ *   │ I│  ← vertical initials
  *   │ U│
- *   │██│   ← belt color fills body
- *   │██│
- *   │██│
- *   │━━│   ← black grau stripes crossing belt
- *   │━━│
- *   │──│   ← tiny light tip at bottom
- *   └──┘
+ *   │──│  ← center fold line
+ *   │██│  ← belt color fills body (gradient when composite belt)
+ *   │━━│  ← grau tick marks
+ *   ╲╱   ← chevron tip
  */
 
 interface GraduationBadgeProps {
@@ -105,41 +102,65 @@ function modalityLabel(modalityId: string): string {
 }
 
 export function GraduationBadge({ modalityId, entry }: GraduationBadgeProps) {
+  const uid = useId();
   const label = modalityLabel(modalityId);
   const { primary, secondary, darkText } = resolveBelt(entry.belt);
   const degrees = Math.max(0, Math.min(4, entry.degree));
-  const marks = Array.from({ length: degrees }, (_, i) => i);
-  const beltTitle = entry.belt
-    ? `${entry.belt}${entry.degree > 0 ? ` · ${entry.degree}º grau` : ""}`
-    : "Sem graduação";
+  const stripeCol = darkText ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.75)";
+  const letterCol = darkText ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.55)";
+  const pending = entry.status === "pending";
+  const rejected = entry.status === "rejected";
+  const beltTitle =
+    (entry.belt
+      ? `${entry.belt}${entry.degree > 0 ? ` · ${entry.degree}º grau` : ""}`
+      : "Sem graduação") +
+    (pending ? " · aguardando aprovação" : rejected ? " · reprovada" : "");
 
-  const bgStyle: React.CSSProperties = secondary
-    ? {
-        backgroundImage: `linear-gradient(to bottom, ${primary} 0%, ${primary} 50%, ${secondary} 50%, ${secondary} 100%)`,
-      }
-    : { backgroundColor: primary };
-
-  const letterColor = darkText ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.92)";
+  const shadowId = `grad-shadow-${uid}`;
+  const fillId = `grad-fill-${uid}`;
 
   return (
-    <div className="grad-badge" title={beltTitle} style={bgStyle}>
-      <div className="grad-badge-letters">
-        {label.split("").map((ch, i) => (
-          <span
+    <div
+      className={`grad-badge${pending ? " grad-badge--pending" : ""}${rejected ? " grad-badge--rejected" : ""}`}
+      title={beltTitle}
+    >
+      <svg width="18" height="104" viewBox="0 0 18 104" className="grad-badge-svg">
+        <defs>
+          <filter id={shadowId}>
+            <feDropShadow dx="0" dy="2" stdDeviation="1.5" floodOpacity="0.4" />
+          </filter>
+          {secondary && (
+            <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={primary} />
+              <stop offset="50%" stopColor={primary} />
+              <stop offset="50%" stopColor={secondary} />
+              <stop offset="100%" stopColor={secondary} />
+            </linearGradient>
+          )}
+        </defs>
+        {/* Belt body: flat top, chevron-cut bottom */}
+        <path
+          d="M0 0 L18 0 L18 96 L9 104 L0 96 Z"
+          fill={secondary ? `url(#${fillId})` : primary}
+          filter={`url(#${shadowId})`}
+        />
+        {/* Subtle shine overlay (upper half) */}
+        <path d="M0 0 L18 0 L18 52 L0 52 Z" fill="rgba(255,255,255,0.06)" />
+        {/* Center fold line */}
+        <line x1="0" y1="52" x2="18" y2="52" stroke={stripeCol} strokeWidth="0.7" opacity="0.3" />
+        {/* Grau tick marks near the pointed end */}
+        {Array.from({ length: degrees }).map((_, i) => (
+          <line
             key={i}
-            className="grad-badge-letter"
-            style={{ color: letterColor }}
-          >
-            {ch}
-          </span>
+            x1="3" y1={80 + i * 4} x2="15" y2={80 + i * 4}
+            stroke={stripeCol} strokeWidth="1.5" strokeLinecap="round"
+          />
         ))}
-      </div>
-      <div className="grad-badge-graus">
-        {marks.map((i) => (
-          <span key={i} className="grad-badge-mark" />
-        ))}
-      </div>
-      <div className="grad-badge-end" />
+      </svg>
+      {/* Modality initials — vertical text inside ribbon */}
+      <span className="grad-badge-label" style={{ color: letterCol }}>
+        {label}
+      </span>
     </div>
   );
 }

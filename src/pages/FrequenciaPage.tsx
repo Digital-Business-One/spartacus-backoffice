@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { api } from "../lib/api";
+import { api, ApiError } from "../lib/api";
 import { useClasses, type ClassData } from "../hooks/useClasses";
+import { GraduationBadgeColumn } from "../components/account/GraduationBadge";
+import type { GraduationEntry } from "../components/account/types";
 
 /* ── Types ──────────────────────────────────────────────────────────────── */
 
@@ -9,6 +11,7 @@ type AttendanceStatus = "absent" | "registered" | "confirmed";
 interface StudentCard {
   userId: string;
   name: string;
+  nickname?: string | null;
   initials: string;
   age?: number | null;
   ageCategory?: string | null;
@@ -16,7 +19,9 @@ interface StudentCard {
   roles: string[];
   isDependent: boolean;
   guardianName?: string | null;
+  graduation?: Record<string, GraduationEntry> | null;
   status: AttendanceStatus;
+  attendanceId?: string | null;
   source?: string | null;
 }
 
@@ -213,22 +218,76 @@ export function FrequenciaPage() {
     ) => {
       if (!selectedClassId || !dashboard) return;
       setActingOn(userId);
-      try {
+
+      async function send(force: boolean) {
         await api.post(`/attendance/${action}`, {
           classId: selectedClassId,
           userId,
-          aulaId: dashboard.aulaId,
+          aulaId: dashboard?.aulaId,
           source: "manual",
+          force,
         });
-        // Optimistic: refetch
+      }
+
+      try {
+        await send(false);
         await fetchDashboard(selectedClassId);
       } catch (err) {
-        console.error(`[FrequenciaPage] ${action} failed:`, err);
+        const isNoSchedule =
+          err instanceof ApiError &&
+          err.status === 400 &&
+          typeof err.message === "string" &&
+          err.message.includes("Sem aula agendada");
+        if (isNoSchedule) {
+          const verb = action === "confirm" ? "registrar" : "rejeitar";
+          const ok = window.confirm(
+            `Esta turma não tem aula agendada para hoje. ` +
+            `Deseja ${verb} a presença retroativamente?`,
+          );
+          if (!ok) return;
+          try {
+            await send(true);
+            await fetchDashboard(selectedClassId);
+          } catch (retryErr) {
+            const msg =
+              retryErr instanceof Error
+                ? retryErr.message
+                : "Falha ao registrar presença retroativa.";
+            window.alert(msg);
+          }
+        } else {
+          const msg =
+            err instanceof Error
+              ? err.message
+              : "Falha ao processar a ação.";
+          window.alert(msg);
+        }
       } finally {
         setActingOn(null);
       }
     },
     [selectedClassId, dashboard, fetchDashboard],
+  );
+
+  const handleUndo = useCallback(
+    async (s: StudentCard) => {
+      if (!s.attendanceId || !selectedClassId) return;
+      setActingOn(s.userId);
+      try {
+        await api.post(
+          `/attendance/${encodeURIComponent(s.attendanceId)}/undo-validation`,
+          {},
+        );
+        await fetchDashboard(selectedClassId);
+      } catch (err) {
+        const msg =
+          err instanceof Error ? err.message : "Falha ao desfazer confirmação.";
+        window.alert(msg);
+      } finally {
+        setActingOn(null);
+      }
+    },
+    [selectedClassId, fetchDashboard],
   );
 
   const selectedClass =
@@ -463,10 +522,20 @@ export function FrequenciaPage() {
               tone="success"
               icon={<IcCheckCircle />}
               cards={colConfirmed}
-              renderActions={() => (
-                <span className="freq-card-check">
-                  <IcCheck />
-                </span>
+              renderActions={(s) => (
+                <>
+                  <span className="freq-card-check">
+                    <IcCheck />
+                  </span>
+                  <button
+                    className="freq-card-undo"
+                    title="Desfazer confirmação"
+                    onClick={() => handleUndo(s)}
+                    disabled={actingOn === s.userId}
+                  >
+                    <IcXCircle />
+                  </button>
+                </>
               )}
               loading={loading}
             />
@@ -541,7 +610,7 @@ function PersonCard({
       </div>
       <div className="freq-card-body">
         <div className="freq-card-name-line">
-          <span className="freq-card-name">{student.name}</span>
+          <span className="freq-card-name">{student.nickname ? `${student.name} / ${student.nickname}` : student.name}</span>
           {isTeacher && <span className="freq-card-role-chip">Prof</span>}
         </div>
         <div className="freq-card-meta">
@@ -563,6 +632,7 @@ function PersonCard({
           <div className="freq-card-guardian">resp. {student.guardianName}</div>
         )}
       </div>
+      <GraduationBadgeColumn graduation={student.graduation} />
       <div className="freq-card-actions">{children}</div>
     </div>
   );

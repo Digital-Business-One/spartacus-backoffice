@@ -27,7 +27,18 @@ export function AccountDetailPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [tab, setTab] = useUrlState("tab", DEFAULT_TAB);
-  const [suspendLoading, setSuspendLoading] = useState(false);
+  const [myRoles, setMyRoles] = useState<string[]>([]);
+  // Moderação (advertir/suspender) — modal com campo de motivo
+  const [modAction, setModAction] = useState<"warn" | "suspend" | null>(null);
+  const [modReason, setModReason] = useState("");
+  const [modSubmitting, setModSubmitting] = useState(false);
+
+  useEffect(() => {
+    api
+      .get<{ roles?: string[] }>("/auth/me")
+      .then((me) => setMyRoles(me.roles ?? []))
+      .catch(() => setMyRoles([]));
+  }, []);
 
   const fetchAccount = useCallback(async () => {
     if (!uid) return;
@@ -48,23 +59,35 @@ export function AccountDetailPage() {
     fetchAccount();
   }, [fetchAccount]);
 
-  const handleSuspend = useCallback(async () => {
-    if (!uid) return;
-    const ok = window.confirm(
-      "Suspender esta conta? O usuário perderá acesso ao app.",
-    );
-    if (!ok) return;
-    setSuspendLoading(true);
+  function openModeration(action: "warn" | "suspend") {
+    setModReason("");
+    setModAction(action);
+  }
+
+  const submitModeration = useCallback(async () => {
+    if (!uid || !modAction) return;
+    const reason = modReason.trim();
+    if (!reason) return;
+    setModSubmitting(true);
     try {
-      await api.post(`/accounts/${uid}/transitions`, { action: "expel" });
+      if (modAction === "warn") {
+        await api.post(`/accounts/${uid}/warning`, { reason });
+      } else {
+        await api.post(`/accounts/${uid}/transitions`, {
+          action: "expel",
+          reason,
+        });
+      }
+      setModAction(null);
       await fetchAccount();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Erro ao suspender";
+      const message =
+        err instanceof Error ? err.message : "Erro ao registrar a ação";
       window.alert(message);
     } finally {
-      setSuspendLoading(false);
+      setModSubmitting(false);
     }
-  }, [uid, fetchAccount]);
+  }, [uid, modAction, modReason, fetchAccount]);
 
   if (loading) {
     return (
@@ -94,6 +117,9 @@ export function AccountDetailPage() {
     : DEFAULT_TAB;
 
   const isCurrentUser = auth.currentUser?.uid === account.uid;
+  const isStaffActor = ["owner", "assistant", "teacher", "instructor"].some(
+    (r) => myRoles.includes(r),
+  );
 
   return (
     <>
@@ -104,9 +130,60 @@ export function AccountDetailPage() {
       <AccountHeader
         account={account}
         isCurrentUser={isCurrentUser}
-        onSuspend={handleSuspend}
-        suspendLoading={suspendLoading}
+        onSuspend={() => openModeration("suspend")}
+        onWarn={() => openModeration("warn")}
+        canWarn={isStaffActor && !isCurrentUser}
+        canAssignNickname={["assistant", "teacher", "instructor"].some((r) =>
+          myRoles.includes(r),
+        )}
+        onNicknameSaved={fetchAccount}
       />
+
+      {modAction && (
+        <div className="mod-modal-overlay" onClick={() => setModAction(null)}>
+          <div className="mod-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="mod-modal-title">
+              {modAction === "warn" ? "Advertir aluno" : "Suspender conta"}
+            </h3>
+            <p className="mod-modal-subtitle">
+              {modAction === "warn"
+                ? `Registrar uma advertência para ${account.name}.`
+                : `Suspender ${account.name}. O usuário perderá acesso ao app.`}
+            </p>
+            <textarea
+              className="mod-modal-textarea"
+              placeholder="Descreva o motivo..."
+              maxLength={500}
+              rows={4}
+              value={modReason}
+              onChange={(e) => setModReason(e.target.value)}
+              autoFocus
+            />
+            <div className="mod-modal-actions">
+              <button
+                className="btn btn-sm btn-outline"
+                onClick={() => setModAction(null)}
+                disabled={modSubmitting}
+              >
+                Cancelar
+              </button>
+              <button
+                className={`btn btn-sm ${
+                  modAction === "warn" ? "btn-primary" : "detail-btn--danger"
+                }`}
+                onClick={submitModeration}
+                disabled={modSubmitting || !modReason.trim()}
+              >
+                {modSubmitting
+                  ? "..."
+                  : modAction === "warn"
+                    ? "Advertir"
+                    : "Suspender"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AccountTabs
         roles={account.roles}

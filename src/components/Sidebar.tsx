@@ -169,7 +169,9 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Dashboards",
     children: [
       { to: "/frequencia", label: "Frequência", icon: Icons.attendance },
-      { to: "/tarefas", label: "Tarefas", icon: Icons.tasks },
+      { to: "/apoio", label: "Apoio", icon: Icons.heart },
+      { to: "/graduacoes", label: "Graduações", icon: Icons.award },
+      { to: "/calendario", label: "Calendário", icon: Icons.attendance },
     ],
   },
   {
@@ -184,19 +186,10 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/lixeira", label: "Lixeira", icon: Icons.userX },
     ],
   },
-  {
-    icon: Icons.calendar,
-    label: "Calendário",
-    children: [
-      { to: "/eventos", label: "Eventos", icon: Icons.award },
-      { to: "/aulas", label: "Aulas", icon: Icons.bookClass },
-    ],
-  },
 ];
 
 const NAV_ITEMS: NavItem[] = [
   { to: "/avaliacao", icon: Icons.clipboard, label: "Avaliação" },
-  { to: "/relatorios", icon: Icons.barChart, label: "Relatórios" },
 ];
 
 // ── Component ───────────────────────────────────────────────────────────────

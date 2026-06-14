@@ -5,7 +5,7 @@ import { api } from "../lib/api";
 import { DatePicker } from "../components/DatePicker";
 import { ClassWizardDrawer } from "../components/class-wizard/ClassWizardDrawer";
 
-type SettingsTab = "cadastro" | "faixas" | "turmas" | "doacoes";
+type SettingsTab = "cadastro" | "faixas" | "modalidades" | "turmas" | "apoio";
 
 // ── Icons (Feather-style, stroke-only) ──────────────────────────────────────
 
@@ -151,8 +151,9 @@ const I = {
 const TABS: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
   { id: "cadastro", label: "Cadastro", icon: I.building },
   { id: "faixas", label: "Faixas Etárias", icon: I.users },
+  { id: "modalidades", label: "Modalidades", icon: I.tag },
   { id: "turmas", label: "Turmas", icon: I.award },
-  { id: "doacoes", label: "Doações", icon: I.gift },
+  { id: "apoio", label: "Apoio", icon: I.gift },
 ];
 
 // ── Domain types ────────────────────────────────────────────────────────────
@@ -161,11 +162,6 @@ interface DonationConfigItem {
   code: string;
   label: string;
   active: boolean;
-}
-
-interface DonationConfig {
-  items: DonationConfigItem[];
-  thankYouMessage: string;
 }
 
 interface AgeRange {
@@ -265,7 +261,8 @@ export function ProjectSettingsPage() {
             onReactivateClass={reactivateClass}
           />
         )}
-        {activeTab === "doacoes" && <DoacoesTab />}
+        {activeTab === "modalidades" && <ModalidadesTab />}
+        {activeTab === "apoio" && <ApoioTab />}
       </div>
 
       <ClassWizardDrawer
@@ -1069,18 +1066,213 @@ function TurmasTab({
 const PROJECT_ID =
   import.meta.env.VITE_FIREBASE_PROJECT_ID ?? "spartacus-artes-marciais";
 
-function DoacoesTab() {
-  const [config, setConfig] = useState<DonationConfig | null>(null);
+interface Modality {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+function slugify(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
+function ModalidadesTab() {
+  const [modalities, setModalities] = useState<Modality[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newName, setNewName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+
+  const fetchModalities = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await api.get<{ modalities: Modality[] }>(
+        `/projects/${PROJECT_ID}/modalities`,
+      );
+      setModalities(data.modalities ?? []);
+    } catch {
+      setModalities([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchModalities();
+  }, [fetchModalities]);
+
+  async function addModality() {
+    const name = newName.trim();
+    if (!name) return;
+    setBusy(true);
+    try {
+      await api.post(`/projects/${PROJECT_ID}/modalities`, {
+        name,
+        slug: slugify(name),
+      });
+      setNewName("");
+      await fetchModalities();
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Erro ao adicionar.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveEdit(id: string) {
+    const name = editName.trim();
+    if (!name) {
+      setEditingId(null);
+      return;
+    }
+    setBusy(true);
+    try {
+      await api.patch(`/projects/${PROJECT_ID}/modalities/${id}`, { name });
+      setEditingId(null);
+      await fetchModalities();
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Erro ao salvar.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeModality(m: Modality) {
+    if (!window.confirm(`Desativar a modalidade "${m.name}"?`)) return;
+    setBusy(true);
+    try {
+      await api.delete(`/projects/${PROJECT_ID}/modalities/${m.id}`);
+      await fetchModalities();
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Erro ao desativar.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="hub-loading-inline">
+        <span className="loading-spinner" />
+        <span>Carregando modalidades...</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="settings-card">
+      <h3 className="settings-card-title">Modalidades do projeto</h3>
+      <p className="settings-card-desc">
+        As modalidades que o projeto oferece. Usadas em turmas e no sistema de
+        graduações.
+      </p>
+
+      <div className="modality-list">
+        {modalities.map((m) => (
+          <div key={m.id} className="modality-row">
+            {editingId === m.id ? (
+              <>
+                <input
+                  className="modality-input"
+                  value={editName}
+                  autoFocus
+                  onChange={(e) => setEditName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveEdit(m.id);
+                    if (e.key === "Escape") setEditingId(null);
+                  }}
+                />
+                <button
+                  className="btn btn-sm btn-primary"
+                  disabled={busy}
+                  onClick={() => saveEdit(m.id)}
+                >
+                  Salvar
+                </button>
+                <button
+                  className="btn btn-sm btn-outline"
+                  onClick={() => setEditingId(null)}
+                >
+                  Cancelar
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="modality-name">{m.name}</span>
+                <span className="modality-slug">{m.slug}</span>
+                <button
+                  className="btn btn-sm btn-outline"
+                  onClick={() => {
+                    setEditingId(m.id);
+                    setEditName(m.name);
+                  }}
+                >
+                  Editar
+                </button>
+                <button
+                  className="btn btn-sm detail-btn--danger"
+                  disabled={busy}
+                  onClick={() => removeModality(m)}
+                >
+                  Desativar
+                </button>
+              </>
+            )}
+          </div>
+        ))}
+        {modalities.length === 0 && (
+          <p className="modality-empty">Nenhuma modalidade cadastrada.</p>
+        )}
+      </div>
+
+      <div className="modality-add">
+        <input
+          className="modality-input"
+          placeholder="Nova modalidade (ex.: Boxe)"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") addModality();
+          }}
+        />
+        <button
+          className="btn btn-sm btn-primary"
+          disabled={busy || !newName.trim()}
+          onClick={addModality}
+        >
+          Adicionar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+interface SupportConfigData {
+  donations: DonationConfigItem[];
+  services: DonationConfigItem[];
+  thankYouMessage: string;
+}
+
+function ApoioTab() {
+  const [config, setConfig] = useState<SupportConfigData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
   const [thankYou, setThankYou] = useState("");
+  const [kind, setKind] = useState<"donations" | "services">("donations");
 
   const fetchConfig = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await api.get<DonationConfig>(
-        `/projects/${PROJECT_ID}/donation-config`,
+      const data = await api.get<SupportConfigData>(
+        `/projects/${PROJECT_ID}/support-config`,
       );
       setConfig(data);
       setThankYou(data.thankYouMessage ?? "");
@@ -1101,17 +1293,17 @@ function DoacoesTab() {
     value: string | boolean,
   ) {
     if (!config) return;
-    const items = [...config.items];
-    items[index] = { ...items[index], [field]: value };
-    setConfig({ ...config, items });
+    const list = [...config[kind]];
+    list[index] = { ...list[index], [field]: value };
+    setConfig({ ...config, [kind]: list });
   }
 
   function addItem() {
     if (!config) return;
     setConfig({
       ...config,
-      items: [
-        ...config.items,
+      [kind]: [
+        ...config[kind],
         { code: `custom_${Date.now()}`, label: "", active: true },
       ],
     });
@@ -1119,10 +1311,7 @@ function DoacoesTab() {
 
   function removeItem(index: number) {
     if (!config) return;
-    setConfig({
-      ...config,
-      items: config.items.filter((_, i) => i !== index),
-    });
+    setConfig({ ...config, [kind]: config[kind].filter((_, i) => i !== index) });
   }
 
   async function handleSave() {
@@ -1130,8 +1319,9 @@ function DoacoesTab() {
     setSaving(true);
     setSavedMsg(null);
     try {
-      await api.patch(`/projects/${PROJECT_ID}/donation-config`, {
-        items: config.items,
+      await api.patch(`/projects/${PROJECT_ID}/support-config`, {
+        donations: config.donations,
+        services: config.services,
         thankYouMessage: thankYou,
       });
       setSavedMsg("Configurações salvas.");
@@ -1149,25 +1339,40 @@ function DoacoesTab() {
     return (
       <div className="hub-loading-inline">
         <span className="loading-spinner" />
-        <span>Carregando configurações de doação...</span>
+        <span>Carregando configurações de apoio...</span>
       </div>
     );
   }
 
   if (!config) return null;
 
+  const items = config[kind];
+
   return (
     <div className="settings-card">
-      <div className="settings-section-title">Itens de doação</div>
+      <div className="apoio-seg">
+        {(["donations", "services"] as const).map((k) => (
+          <button
+            key={k}
+            className={`apoio-seg-btn ${kind === k ? "active" : ""}`}
+            onClick={() => setKind(k)}
+          >
+            {k === "donations" ? "Doações" : "Serviços"}
+          </button>
+        ))}
+      </div>
+
       <p className="settings-card-desc">
-        Configure os itens disponíveis para doação mensal no aplicativo.
-        Desative itens para ocultá-los sem excluir.
+        {kind === "donations"
+          ? "Itens disponíveis para doação no aplicativo."
+          : "Serviços que os alunos podem oferecer como apoio."}{" "}
+        Desative para ocultar sem excluir.
       </p>
 
       <div className="donation-list">
-        {config.items.map((item, i) => (
+        {items.map((item, i) => (
           <div
-            key={item.code}
+            key={i}
             className={`donation-row ${item.active ? "" : "donation-row--inactive"}`}
           >
             <label className="donation-toggle">
@@ -1203,21 +1408,21 @@ function DoacoesTab() {
 
       <button className="settings-add-btn" onClick={addItem}>
         {I.plus}
-        <span>Adicionar item</span>
+        <span>Adicionar {kind === "donations" ? "doação" : "serviço"}</span>
       </button>
 
       <div className="settings-section-title" style={{ marginTop: "1.5rem" }}>
         Mensagem de agradecimento
       </div>
       <p className="settings-card-desc">
-        Exibida na tela de sucesso do app após o registro da doação.
+        Exibida na tela de sucesso do app após o registro do apoio.
       </p>
       <textarea
         className="form-input donation-thankyou"
         rows={3}
         value={thankYou}
         onChange={(e) => setThankYou(e.target.value)}
-        placeholder="Ex: Muito obrigado pelo seu apoio! Lembre-se de levar a sua doação no próximo treino. Oss!"
+        placeholder="Ex: Muito obrigado pelo seu apoio! Oss!"
       />
 
       <div className="settings-save-bar">

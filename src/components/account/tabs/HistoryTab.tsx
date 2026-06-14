@@ -31,7 +31,9 @@ const EVENT_TYPE_OPTIONS = [
   { value: "creation", label: "Criação" },
   { value: "edit", label: "Edição" },
   { value: "approval", label: "Aprovação" },
+  { value: "warning", label: "Advertência" },
   { value: "suspension", label: "Suspensão" },
+  { value: "graduation", label: "Graduação" },
   { value: "donation", label: "Doação" },
   { value: "attendance", label: "Presença" },
 ];
@@ -40,18 +42,24 @@ const EVENT_TYPE_ICON: Record<string, string> = {
   creation: "✨",
   edit: "✏️",
   approval: "✓",
+  warning: "⚠️",
   suspension: "🚫",
+  graduation: "🥋",
   donation: "💝",
   attendance: "📅",
+  account: "👤",
 };
 
 const EVENT_TYPE_COLOR: Record<string, string> = {
   creation: "var(--gold)",
   edit: "var(--text-muted)",
   approval: "var(--success)",
+  warning: "#f59e0b",
   suspension: "var(--error)",
+  graduation: "var(--gold)",
   donation: "var(--gold)",
   attendance: "var(--gold)",
+  account: "var(--text-muted)",
 };
 
 const MONTH_OPTIONS = [

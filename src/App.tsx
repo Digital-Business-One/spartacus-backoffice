@@ -25,10 +25,9 @@ import { SupportPage } from "./pages/SupportPage";
 import { StaffPage } from "./pages/StaffPage";
 import { EvaluationPage } from "./pages/EvaluationPage";
 import { FrequenciaPage } from "./pages/FrequenciaPage";
-import { CalendarPage } from "./pages/CalendarPage";
-import { EventsPage } from "./pages/EventsPage";
-import { AulasPage } from "./pages/AulasPage";
-import { ReportsPage } from "./pages/ReportsPage";
+import { ApoioPage } from "./pages/ApoioPage";
+import { GraduacoesPage } from "./pages/GraduacoesPage";
+import { CalendarioPage } from "./pages/CalendarioPage";
 import { IAMPage } from "./pages/IAMPage";
 import { ProjectSettingsPage } from "./pages/ProjectSettingsPage";
 import { ClassWizardPage } from "./pages/ClassWizardPage";
@@ -120,17 +119,16 @@ export default function App() {
             {/* Redirects para rotas antigas */}
             <Route path="/em-analise" element={<Navigate to="/onboarding" replace />} />
             <Route path="/bloqueados" element={<Navigate to="/lixeira" replace />} />
-            <Route path="/apoio" element={<Navigate to="/apoiadores" replace />} />
             <Route path="/professores" element={<Navigate to="/staff?role=teacher" replace />} />
             <Route path="/instrutores" element={<Navigate to="/staff?role=instructor" replace />} />
             <Route path="/contas" element={<Navigate to="/onboarding" replace />} />
             {/* Módulos */}
             <Route path="/frequencia" element={<FrequenciaPage />} />
+            <Route path="/apoio" element={<ApoioPage />} />
+            <Route path="/doacoes" element={<Navigate to="/apoio" replace />} />
+            <Route path="/graduacoes" element={<GraduacoesPage />} />
+            <Route path="/calendario" element={<CalendarioPage />} />
             <Route path="/avaliacao" element={<EvaluationPage />} />
-            <Route path="/calendario" element={<CalendarPage />} />
-            <Route path="/eventos" element={<EventsPage />} />
-            <Route path="/aulas" element={<AulasPage />} />
-            <Route path="/relatorios" element={<ReportsPage />} />
             {/* Conta */}
             <Route path="/update-password" element={<ChangePasswordPage />} />
             {/* Configurações */}
