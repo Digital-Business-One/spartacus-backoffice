@@ -5,7 +5,7 @@ import { api } from "../lib/api";
 import { DatePicker } from "../components/DatePicker";
 import { ClassWizardDrawer } from "../components/class-wizard/ClassWizardDrawer";
 
-type SettingsTab = "cadastro" | "faixas" | "modalidades" | "turmas" | "doacoes";
+type SettingsTab = "cadastro" | "faixas" | "modalidades" | "turmas" | "apoio";
 
 // ── Icons (Feather-style, stroke-only) ──────────────────────────────────────
 
@@ -153,7 +153,7 @@ const TABS: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
   { id: "faixas", label: "Faixas Etárias", icon: I.users },
   { id: "modalidades", label: "Modalidades", icon: I.tag },
   { id: "turmas", label: "Turmas", icon: I.award },
-  { id: "doacoes", label: "Doações", icon: I.gift },
+  { id: "apoio", label: "Apoio", icon: I.gift },
 ];
 
 // ── Domain types ────────────────────────────────────────────────────────────
@@ -162,11 +162,6 @@ interface DonationConfigItem {
   code: string;
   label: string;
   active: boolean;
-}
-
-interface DonationConfig {
-  items: DonationConfigItem[];
-  thankYouMessage: string;
 }
 
 interface AgeRange {
@@ -267,7 +262,7 @@ export function ProjectSettingsPage() {
           />
         )}
         {activeTab === "modalidades" && <ModalidadesTab />}
-        {activeTab === "doacoes" && <DoacoesTab />}
+        {activeTab === "apoio" && <ApoioTab />}
       </div>
 
       <ClassWizardDrawer
@@ -1259,18 +1254,25 @@ function ModalidadesTab() {
   );
 }
 
-function DoacoesTab() {
-  const [config, setConfig] = useState<DonationConfig | null>(null);
+interface SupportConfigData {
+  donations: DonationConfigItem[];
+  services: DonationConfigItem[];
+  thankYouMessage: string;
+}
+
+function ApoioTab() {
+  const [config, setConfig] = useState<SupportConfigData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
   const [thankYou, setThankYou] = useState("");
+  const [kind, setKind] = useState<"donations" | "services">("donations");
 
   const fetchConfig = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await api.get<DonationConfig>(
-        `/projects/${PROJECT_ID}/donation-config`,
+      const data = await api.get<SupportConfigData>(
+        `/projects/${PROJECT_ID}/support-config`,
       );
       setConfig(data);
       setThankYou(data.thankYouMessage ?? "");
@@ -1291,17 +1293,17 @@ function DoacoesTab() {
     value: string | boolean,
   ) {
     if (!config) return;
-    const items = [...config.items];
-    items[index] = { ...items[index], [field]: value };
-    setConfig({ ...config, items });
+    const list = [...config[kind]];
+    list[index] = { ...list[index], [field]: value };
+    setConfig({ ...config, [kind]: list });
   }
 
   function addItem() {
     if (!config) return;
     setConfig({
       ...config,
-      items: [
-        ...config.items,
+      [kind]: [
+        ...config[kind],
         { code: `custom_${Date.now()}`, label: "", active: true },
       ],
     });
@@ -1309,10 +1311,7 @@ function DoacoesTab() {
 
   function removeItem(index: number) {
     if (!config) return;
-    setConfig({
-      ...config,
-      items: config.items.filter((_, i) => i !== index),
-    });
+    setConfig({ ...config, [kind]: config[kind].filter((_, i) => i !== index) });
   }
 
   async function handleSave() {
@@ -1320,8 +1319,9 @@ function DoacoesTab() {
     setSaving(true);
     setSavedMsg(null);
     try {
-      await api.patch(`/projects/${PROJECT_ID}/donation-config`, {
-        items: config.items,
+      await api.patch(`/projects/${PROJECT_ID}/support-config`, {
+        donations: config.donations,
+        services: config.services,
         thankYouMessage: thankYou,
       });
       setSavedMsg("Configurações salvas.");
@@ -1339,25 +1339,40 @@ function DoacoesTab() {
     return (
       <div className="hub-loading-inline">
         <span className="loading-spinner" />
-        <span>Carregando configurações de doação...</span>
+        <span>Carregando configurações de apoio...</span>
       </div>
     );
   }
 
   if (!config) return null;
 
+  const items = config[kind];
+
   return (
     <div className="settings-card">
-      <div className="settings-section-title">Itens de doação</div>
+      <div className="apoio-seg">
+        {(["donations", "services"] as const).map((k) => (
+          <button
+            key={k}
+            className={`apoio-seg-btn ${kind === k ? "active" : ""}`}
+            onClick={() => setKind(k)}
+          >
+            {k === "donations" ? "Doações" : "Serviços"}
+          </button>
+        ))}
+      </div>
+
       <p className="settings-card-desc">
-        Configure os itens disponíveis para doação mensal no aplicativo.
-        Desative itens para ocultá-los sem excluir.
+        {kind === "donations"
+          ? "Itens disponíveis para doação no aplicativo."
+          : "Serviços que os alunos podem oferecer como apoio."}{" "}
+        Desative para ocultar sem excluir.
       </p>
 
       <div className="donation-list">
-        {config.items.map((item, i) => (
+        {items.map((item, i) => (
           <div
-            key={item.code}
+            key={i}
             className={`donation-row ${item.active ? "" : "donation-row--inactive"}`}
           >
             <label className="donation-toggle">
@@ -1393,21 +1408,21 @@ function DoacoesTab() {
 
       <button className="settings-add-btn" onClick={addItem}>
         {I.plus}
-        <span>Adicionar item</span>
+        <span>Adicionar {kind === "donations" ? "doação" : "serviço"}</span>
       </button>
 
       <div className="settings-section-title" style={{ marginTop: "1.5rem" }}>
         Mensagem de agradecimento
       </div>
       <p className="settings-card-desc">
-        Exibida na tela de sucesso do app após o registro da doação.
+        Exibida na tela de sucesso do app após o registro do apoio.
       </p>
       <textarea
         className="form-input donation-thankyou"
         rows={3}
         value={thankYou}
         onChange={(e) => setThankYou(e.target.value)}
-        placeholder="Ex: Muito obrigado pelo seu apoio! Lembre-se de levar a sua doação no próximo treino. Oss!"
+        placeholder="Ex: Muito obrigado pelo seu apoio! Oss!"
       />
 
       <div className="settings-save-bar">

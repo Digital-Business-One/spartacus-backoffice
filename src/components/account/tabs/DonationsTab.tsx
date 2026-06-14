@@ -7,12 +7,13 @@ interface DonationsTabProps {
 
 interface DonationHistoryItem {
   id: string;
-  month: string;          // "2026-03"
-  monthLabel: string;     // "MARÇO / 2026"
+  supportType: "donation" | "service";
+  month?: string | null;
+  monthLabel?: string | null;
   item?: string | null;
   itemLabel: string;
   itemDescription?: string | null;
-  status: string;         // pledged | received | pending
+  status: string;         // pledged | received | absent
   statusLabel: string;
   createdAt: string;
   receivedBy?: string | null;
@@ -21,12 +22,18 @@ interface DonationHistoryItem {
 }
 
 interface DonationHistoryResponse {
-  donations: DonationHistoryItem[];
+  items: DonationHistoryItem[];
 }
+
+const TYPE_LABEL: Record<string, string> = {
+  donation: "Doação",
+  service: "Serviço",
+};
 
 const STATUS_VARIANT: Record<string, string> = {
   received: "success",
   pledged: "warning",
+  absent: "error",
   pending: "muted",
 };
 
@@ -43,9 +50,9 @@ export function DonationsTab({ uid }: DonationsTabProps) {
       try {
         const year = new Date().getFullYear();
         const result = await api.get<DonationHistoryResponse>(
-          `/accounts/${uid}/donations/history?year=${year}`,
+          `/accounts/${uid}/support/history?year=${year}`,
         );
-        if (!cancelled) setItems(result.donations);
+        if (!cancelled) setItems(result.items);
       } catch (err: unknown) {
         if (cancelled) return;
         setError(err instanceof Error ? err.message : "Erro ao carregar");
@@ -92,7 +99,7 @@ export function DonationsTab({ uid }: DonationsTabProps) {
   // Aggregate stats — current year, last donation, pending count
   const currentYear = new Date().getFullYear();
   const totalThisYear = items.filter(
-    (d) => d.status === "received" && d.month.startsWith(`${currentYear}-`),
+    (d) => d.status === "received" && (d.month ?? "").startsWith(`${currentYear}-`),
   ).length;
   const pendingCount = items.filter((d) => d.status === "pledged").length;
   const lastDonation = items.find((d) => d.status === "received");
@@ -107,7 +114,7 @@ export function DonationsTab({ uid }: DonationsTabProps) {
         <StatCard
           value={lastDonation?.itemLabel ?? "—"}
           label="Última doação"
-          subLabel={lastDonation?.monthLabel}
+          subLabel={lastDonation?.monthLabel ?? undefined}
         />
         <StatCard value={pendingCount} label="Pendentes de validação" />
       </div>
@@ -123,7 +130,8 @@ export function DonationsTab({ uid }: DonationsTabProps) {
             <thead>
               <tr>
                 <th>Mês de referência</th>
-                <th>Item doado</th>
+                <th>Tipo</th>
+                <th>Item</th>
                 <th>Data do registro</th>
                 <th>Status</th>
                 <th>Validado por</th>
@@ -134,7 +142,8 @@ export function DonationsTab({ uid }: DonationsTabProps) {
                 const variant = STATUS_VARIANT[d.status] ?? "muted";
                 return (
                   <tr key={d.id}>
-                    <td className="donations-month">{d.monthLabel}</td>
+                    <td className="donations-month">{d.monthLabel ?? "—"}</td>
+                    <td>{TYPE_LABEL[d.supportType] ?? "—"}</td>
                     <td>
                       {d.itemLabel}
                       {d.itemDescription && (

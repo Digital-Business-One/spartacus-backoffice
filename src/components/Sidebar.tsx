@@ -169,8 +169,9 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Dashboards",
     children: [
       { to: "/frequencia", label: "Frequência", icon: Icons.attendance },
-      { to: "/doacoes", label: "Doações", icon: Icons.heart },
+      { to: "/apoio", label: "Apoio", icon: Icons.heart },
       { to: "/graduacoes", label: "Graduações", icon: Icons.award },
+      { to: "/calendario", label: "Calendário", icon: Icons.attendance },
     ],
   },
   {
