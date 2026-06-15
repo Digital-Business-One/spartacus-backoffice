@@ -81,25 +81,25 @@ const SYMPTOM_LABELS: Record<keyof SymptomsIn, string> = {
   abdominalPain: "Dor abdominal",
   legPain: "Dor nas pernas",
   armPain: "Dor nos braços",
-  backNeckPain: "Dor nas costas / pescoço",
+  backNeckPain: "Dor nas costas ou pescoço",
   chestPain: "Dor no peito",
-  jointPain: "Dor nas articulações",
-  shortnessOfBreath: "Falta de ar",
-  feelingWeak: "Sensação de fraqueza",
+  jointPain: "Dores articulares",
+  shortnessOfBreath: "Falta de ar com esforço leve",
+  feelingWeak: "Sentir-se fraco",
   dizziness: "Tontura",
-  heartPalpitation: "Palpitação",
+  heartPalpitation: "Palpitação cardíaca",
 };
 
 const WEEKLY_WORK_HOURS_LABELS: Record<string, string> = {
   less_than_20: "Menos de 20h",
-  "20_to_40": "Entre 20h e 40h",
-  "41_to_60": "Entre 41h e 60h",
+  "20_to_40": "20 a 40h",
+  "41_to_60": "41 a 60h",
   more_than_60: "Mais de 60h",
 };
 
 const WORK_ACTIVITY_LABELS: Record<string, string> = {
   sitting: "Sentado",
-  lifting_weights: "Levantando peso",
+  lifting_weights: "Carregando peso",
   standing: "Em pé",
   walking: "Caminhando",
   driving: "Dirigindo",
@@ -109,7 +109,7 @@ const WORK_ACTIVITY_LABELS: Record<string, string> = {
 const FAMILY_HEART_DISEASE_LABELS: Record<string, string> = {
   father: "Pai",
   mother: "Mãe",
-  sibling: "Irmão(ã)",
+  sibling: "Irmão/Irmã",
   grandparent: "Avô/Avó",
 };
 
@@ -121,24 +121,27 @@ const SURGERY_LABELS: Record<string, string> = {
   kidney: "Rim",
   lung: "Pulmão",
   eyes: "Olhos",
-  other: "Outras",
+  other: "Outra",
 };
 
+// Must mirror the app's CONDITION_OPTIONS exactly (StepMedicalHistory.tsx) —
+// these are the values actually stored, so the display map keys/labels have to
+// match what the input form emits.
 const DIAGNOSED_CONDITION_LABELS: Record<string, string> = {
+  high_blood_pressure: "Hipertensão",
   diabetes: "Diabetes",
   asthma: "Asma",
-  hypertension: "Hipertensão",
-  heart_disease: "Doença cardíaca",
-  obesity: "Obesidade",
-  rheumatism: "Reumatismo",
   arthritis: "Artrite",
-  arthrosis: "Artrose",
-  depression: "Depressão",
-  anxiety: "Ansiedade",
-  epilepsy: "Epilepsia",
-  thyroid: "Tireoide",
-  high_cholesterol: "Colesterol alto",
-  other: "Outras",
+  obesity: "Obesidade",
+  anemia: "Anemia",
+  stroke: "AVC",
+  kidney_disease: "Doença renal",
+  emphysema: "Enfisema",
+  ulcer: "Úlcera",
+  eye_problems: "Problemas oculares",
+  muscle_problems: "Problemas musculares",
+  alcoholism: "Alcoolismo",
+  other: "Outra",
 };
 
 const GOAL_LABELS: Record<string, string> = {
