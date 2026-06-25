@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError } from "../../../lib/api";
 import { formatDate } from "../types";
 
@@ -57,7 +57,7 @@ interface HealthBehaviorIn {
 interface MedicalHistoryOut {
   projectId: string;
   userId: string;
-  status: string;
+  status: "pending_approval" | "approved" | "needs_revision" | string;
   dailyActivities?: DailyActivitiesIn | null;
   medicalHistory: MedicalHistoryIn;
   healthBehavior: HealthBehaviorIn;
@@ -66,6 +66,7 @@ interface MedicalHistoryOut {
   generalComments: string;
   filledAt?: string | null;
   filledBy?: string | null;
+  reviewNote?: string | null;
   reviewedAt?: string | null;
   reviewedBy?: string | null;
 }
@@ -159,6 +160,7 @@ const GOAL_LABELS: Record<string, string> = {
 const STATUS_LABELS: Record<string, { label: string; variant: string }> = {
   pending_approval: { label: "Aguardando aprovação", variant: "warning" },
   approved: { label: "Aprovado", variant: "success" },
+  needs_revision: { label: "Revisão solicitada", variant: "error" },
 };
 
 export function MedicalHistoryTab({ uid }: MedicalHistoryTabProps) {
@@ -166,6 +168,33 @@ export function MedicalHistoryTab({ uid }: MedicalHistoryTabProps) {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Review action state
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [showRevisionForm, setShowRevisionForm] = useState(false);
+  const [revisionNote, setRevisionNote] = useState("");
+  const [revisionNoteError, setRevisionNoteError] = useState(false);
+  const revisionInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    setNotFound(false);
+    try {
+      const result = await api.get<MedicalHistoryOut>(
+        `/accounts/${uid}/medical-history`,
+      );
+      setData(result);
+    } catch (err: unknown) {
+      if (err instanceof ApiError && err.status === 404) {
+        setNotFound(true);
+      } else {
+        setError(err instanceof Error ? err.message : "Erro ao carregar");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [uid]);
 
   useEffect(() => {
     let cancelled = false;
@@ -194,6 +223,57 @@ export function MedicalHistoryTab({ uid }: MedicalHistoryTabProps) {
       cancelled = true;
     };
   }, [uid]);
+
+  async function handleApprove() {
+    setReviewLoading(true);
+    try {
+      await api.patch(`/medical-history/${uid}/review`, { action: "approve" });
+      await loadData();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao aprovar";
+      window.alert(msg);
+    } finally {
+      setReviewLoading(false);
+    }
+  }
+
+  function openRevisionForm() {
+    setRevisionNote("");
+    setRevisionNoteError(false);
+    setShowRevisionForm(true);
+    // Focus the textarea on next paint
+    setTimeout(() => revisionInputRef.current?.focus(), 50);
+  }
+
+  function cancelRevisionForm() {
+    setShowRevisionForm(false);
+    setRevisionNote("");
+    setRevisionNoteError(false);
+  }
+
+  async function handleRequestRevision() {
+    const note = revisionNote.trim();
+    if (!note) {
+      setRevisionNoteError(true);
+      revisionInputRef.current?.focus();
+      return;
+    }
+    setReviewLoading(true);
+    try {
+      await api.patch(`/medical-history/${uid}/review`, {
+        action: "request_revision",
+        note,
+      });
+      setShowRevisionForm(false);
+      setRevisionNote("");
+      await loadData();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao solicitar revisão";
+      window.alert(msg);
+    } finally {
+      setReviewLoading(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -243,12 +323,95 @@ export function MedicalHistoryTab({ uid }: MedicalHistoryTabProps) {
               Preenchida em {formatDate(data.filledAt)}
             </span>
           )}
+          {data.reviewedAt && (
+            <span className="anamnese-status-meta">
+              Avaliada em {formatDate(data.reviewedAt)}
+              {data.reviewedBy ? ` por ${data.reviewedBy}` : ""}
+            </span>
+          )}
         </div>
-        {data.status === "pending_approval" && (
-          <div className="anamnese-status-disclaimer">
-            ⓘ Esta aprovação faz parte do fluxo administrativo de aprovação
-            de contas e não constitui validação clínica.
+
+        {/* Review note (needs_revision or approved with note) */}
+        {data.reviewNote && (
+          <div className="anamnese-review-note">
+            <span className="anamnese-review-note-label">Motivo:</span>{" "}
+            {data.reviewNote}
           </div>
+        )}
+
+        {data.status === "pending_approval" && (
+          <>
+            <div className="anamnese-status-disclaimer">
+              ⓘ Esta aprovação faz parte do fluxo administrativo de aprovação
+              de contas e não constitui validação clínica.
+            </div>
+
+            {/* Review actions */}
+            {!showRevisionForm ? (
+              <div className="anamnese-review-actions">
+                <button
+                  type="button"
+                  className="account-action-btn account-action-btn--primary"
+                  disabled={reviewLoading}
+                  onClick={handleApprove}
+                >
+                  {reviewLoading ? "Aguarde..." : "Aprovar"}
+                </button>
+                <button
+                  type="button"
+                  className="account-action-btn"
+                  disabled={reviewLoading}
+                  onClick={openRevisionForm}
+                >
+                  Pedir revisão
+                </button>
+              </div>
+            ) : (
+              <div className="anamnese-revision-form">
+                <label className="anamnese-revision-label" htmlFor="revision-note">
+                  Motivo da revisão <span className="anamnese-revision-required">*</span>
+                </label>
+                <textarea
+                  id="revision-note"
+                  ref={revisionInputRef}
+                  className={`anamnese-revision-textarea${revisionNoteError ? " anamnese-revision-textarea--error" : ""}`}
+                  rows={3}
+                  placeholder="Descreva o que precisa ser corrigido ou complementado..."
+                  value={revisionNote}
+                  disabled={reviewLoading}
+                  onChange={(e) => {
+                    setRevisionNote(e.target.value);
+                    if (revisionNoteError && e.target.value.trim()) {
+                      setRevisionNoteError(false);
+                    }
+                  }}
+                />
+                {revisionNoteError && (
+                  <span className="anamnese-revision-error-msg">
+                    O motivo é obrigatório.
+                  </span>
+                )}
+                <div className="anamnese-review-actions">
+                  <button
+                    type="button"
+                    className="account-action-btn account-action-btn--danger"
+                    disabled={reviewLoading}
+                    onClick={handleRequestRevision}
+                  >
+                    {reviewLoading ? "Aguarde..." : "Enviar revisão"}
+                  </button>
+                  <button
+                    type="button"
+                    className="account-action-btn"
+                    disabled={reviewLoading}
+                    onClick={cancelRevisionForm}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
