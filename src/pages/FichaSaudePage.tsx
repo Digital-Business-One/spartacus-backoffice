@@ -284,7 +284,7 @@ function FichaCard({
     setDetailLoading(true);
     setDetailError(null);
     api
-      .get<MedicalHistoryOut>(`/accounts/${item.uid}/medical-history`)
+      .get<MedicalHistoryOut>(`/medical-history/${item.uid}`)
       .then((res) => { if (!cancelled) setDetail(res); })
       .catch((err: unknown) => {
         if (cancelled) return;
