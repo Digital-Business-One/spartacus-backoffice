@@ -172,13 +172,14 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/apoio", label: "Apoio", icon: Icons.heart },
       { to: "/graduacoes", label: "Graduações", icon: Icons.award },
       { to: "/calendario", label: "Calendário", icon: Icons.attendance },
+      { to: "/ficha-saude", label: "Ficha de saúde", icon: Icons.clipboard },
     ],
   },
   {
     icon: Icons.users,
     label: "Contas",
     children: [
-      { to: "/onboarding", label: "Onboarding", icon: Icons.userCheck },
+      { to: "/onboarding", label: "Matrícula", icon: Icons.userCheck },
       { to: "/alunos", label: "Alunos", icon: Icons.graduationCap },
       { to: "/staff", label: "Staff", icon: Icons.bookOpen },
       { to: "/apoiadores", label: "Apoiadores", icon: Icons.heart },

@@ -3112,6 +3112,78 @@ input, select, button, textarea {
   font-style: italic;
 }
 
+.anamnese-status-banner--error {
+  border-color: rgba(231, 76, 76, 0.4);
+  background: rgba(231, 76, 76, 0.05);
+}
+
+.anamnese-review-note {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255,255,255,0.03);
+  border-radius: 6px;
+  border-left: 3px solid var(--border);
+}
+
+.anamnese-review-note-label {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.anamnese-review-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.anamnese-revision-form {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.anamnese-revision-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.anamnese-revision-required {
+  color: var(--error);
+}
+
+.anamnese-revision-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+
+.anamnese-revision-textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.anamnese-revision-textarea--error {
+  border-color: var(--error);
+}
+
+.anamnese-revision-error-msg {
+  font-size: 0.78rem;
+  color: var(--error);
+}
+
 .anamnese-comments {
   font-size: 0.85rem;
   color: var(--text-primary);
