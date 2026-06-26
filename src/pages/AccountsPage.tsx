@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { Pagination } from "../components/Pagination";
 import { AccountListCard, type AccountListItem } from "../components/account/AccountListCard";
@@ -20,11 +20,10 @@ const ROLE_LABELS: Record<string, string> = {
   sponsor: "Patrocinador",
 };
 
-type FilterTab = "pending" | "anamnese";
+type FilterTab = "pending";
 
 const TAB_STATUS_CSV: Record<FilterTab, string> = {
   pending: "pending_approval,waiting_registration_review,revised_registration",
-  anamnese: "waiting_medical_history,pending_medical_history_approval",
 };
 
 const PENDING_STATUS_OPTIONS: { value: string; label: string }[] = [
@@ -41,7 +40,6 @@ const PAGE_SIZE = 12;
 // ── Page ────────────────────────────────────────────────────────────────────
 
 export function AccountsPage() {
-  const [tab] = useUrlState("tab", "pending");
   const [statusFilter, setStatusFilter] = useUrlState(
     "status",
     TAB_STATUS_CSV.pending,
@@ -53,13 +51,10 @@ export function AccountsPage() {
   const [transitioning, setTransitioning] = useState<string | null>(null);
   const [sort, setSort] = useUrlState("sort", "name");
   const [page, setPage] = useUrlNumber("page", 1);
-  const [, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const currentTab = (tab as FilterTab) || "pending";
-  const tabStatuses = TAB_STATUS_CSV[currentTab];
-  const effectiveStatus = statusFilter || tabStatuses;
+  const effectiveStatus = statusFilter || TAB_STATUS_CSV.pending;
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);
@@ -90,18 +85,6 @@ export function AccountsPage() {
     if (roleSet.size <= 1) return raw;
     return raw.filter((a) => a.roles.some((r) => roleSet.has(r)));
   }, [data, roleSet]);
-
-  function switchTab(t: FilterTab) {
-    setSearchParams(
-      () => {
-        const next = new URLSearchParams();
-        if (t !== "pending") next.set("tab", t);
-        next.set("status", TAB_STATUS_CSV[t]);
-        return next;
-      },
-      { replace: true },
-    );
-  }
 
   function toggleRole(code: string, e: React.MouseEvent) {
     const next = new Set(roleSet);
@@ -154,28 +137,12 @@ export function AccountsPage() {
   const hiddenActiveCount = [...roleSet].filter(
     (r) => !DEFAULT_VISIBLE_ROLES.includes(r),
   ).length;
-  const hideRoleFilter = currentTab === "anamnese";
 
   return (
     <>
       <div className="page-header">
-        <h2>Onboarding</h2>
-        <p>Contas em processo de validação, anamnese e aprovação</p>
-      </div>
-
-      <div className="tab-bar">
-        <button
-          className={`tab-btn ${currentTab === "pending" ? "active" : ""}`}
-          onClick={() => switchTab("pending")}
-        >
-          Pendente
-        </button>
-        <button
-          className={`tab-btn ${currentTab === "anamnese" ? "active" : ""}`}
-          onClick={() => switchTab("anamnese")}
-        >
-          Anamnese
-        </button>
+        <h2>Matrícula</h2>
+        <p>Contas em processo de validação e aprovação</p>
       </div>
 
       <div className="search-bar">
@@ -190,24 +157,20 @@ export function AccountsPage() {
 
       <div className="list-toolbar">
         <div className="list-toolbar-filters">
-          {/* Status filter — only on pending tab */}
-          {currentTab === "pending" && (
-            <div className="filter-group">
-              <span className="filter-label">Status:</span>
-              {PENDING_STATUS_OPTIONS.map((s) => (
-                <button
-                  key={s.value}
-                  className={`filter-chip ${effectiveStatus === s.value ? "active" : ""}`}
-                  onClick={() => setStatusFilter(s.value)}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="filter-group">
+            <span className="filter-label">Status:</span>
+            {PENDING_STATUS_OPTIONS.map((s) => (
+              <button
+                key={s.value}
+                className={`filter-chip ${effectiveStatus === s.value ? "active" : ""}`}
+                onClick={() => setStatusFilter(s.value)}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
 
-          {!hideRoleFilter && (
-            <div className="filter-group">
+          <div className="filter-group">
               <span className="filter-label">Perfil:</span>
               {defaultRoles.map(([code, label]) => (
                 <button
@@ -227,8 +190,7 @@ export function AccountsPage() {
                 onSelect={(code, e) => toggleRole(code, e)}
                 hiddenActiveCount={hiddenActiveCount}
               />
-            </div>
-          )}
+          </div>
         </div>
 
         <div className="list-toolbar-divider" />
@@ -259,12 +221,8 @@ export function AccountsPage() {
       ) : items.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon">📋</div>
-          <h3>Nenhuma conta {currentTab === "pending" ? "pendente" : "encontrada"}</h3>
-          <p>
-            {currentTab === "pending"
-              ? "Quando novas contas forem criadas, elas aparecerão aqui."
-              : "Nenhuma conta encontrada nesta etapa."}
-          </p>
+          <h3>Nenhuma conta pendente</h3>
+          <p>Quando novas contas forem criadas, elas aparecerão aqui.</p>
         </div>
       ) : (
         <>

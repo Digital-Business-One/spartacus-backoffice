@@ -27,6 +27,7 @@ import { EvaluationPage } from "./pages/EvaluationPage";
 import { FrequenciaPage } from "./pages/FrequenciaPage";
 import { ApoioPage } from "./pages/ApoioPage";
 import { GraduacoesPage } from "./pages/GraduacoesPage";
+import { FichaSaudePage } from "./pages/FichaSaudePage";
 import { CalendarioPage } from "./pages/CalendarioPage";
 import { IAMPage } from "./pages/IAMPage";
 import { ProjectSettingsPage } from "./pages/ProjectSettingsPage";
@@ -127,6 +128,7 @@ export default function App() {
             <Route path="/apoio" element={<ApoioPage />} />
             <Route path="/doacoes" element={<Navigate to="/apoio" replace />} />
             <Route path="/graduacoes" element={<GraduacoesPage />} />
+            <Route path="/ficha-saude" element={<FichaSaudePage />} />
             <Route path="/calendario" element={<CalendarioPage />} />
             <Route path="/avaliacao" element={<EvaluationPage />} />
             {/* Conta */}
