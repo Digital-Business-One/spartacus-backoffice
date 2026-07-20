@@ -32,6 +32,8 @@ interface ClassForm {
   location: string;
   ageMin: string;
   ageMax: string;
+  attendanceEngineEnabled: boolean;
+  attendanceStartDate: string; // ISO YYYY-MM-DD, "" when unset
 }
 
 const INITIAL: ClassForm = {
@@ -45,7 +47,21 @@ const INITIAL: ClassForm = {
   location: "",
   ageMin: "",
   ageMax: "",
+  attendanceEngineEnabled: false,
+  attendanceStartDate: "",
 };
+
+function attendanceEngineError(form: ClassForm): string | null {
+  if (form.attendanceEngineEnabled && !form.attendanceStartDate) {
+    return "Informe a data-base para ativar o motor de frequência.";
+  }
+  return null;
+}
+
+function formatIsoDateBR(iso: string): string {
+  const [y, m, d] = iso.split("-");
+  return y && m && d ? `${d}/${m}/${y}` : iso;
+}
 
 export function ClassWizardPage() {
   const { id } = useParams<{ id: string }>();
@@ -96,6 +112,8 @@ export function ClassWizardPage() {
       location: cls.location ?? "",
       ageMin: cls.age_range?.min?.toString() ?? "",
       ageMax: cls.age_range?.max?.toString() ?? "",
+      attendanceEngineEnabled: cls.attendanceEngineEnabled ?? false,
+      attendanceStartDate: cls.attendanceStartDate ?? "",
     });
   }, [isEdit, id, classes]);
 
@@ -118,6 +136,13 @@ export function ClassWizardPage() {
   }
 
   async function handleSubmit() {
+    // Fail fast client-side — the server also enforces this (422) but there's
+    // no reason to round-trip for a check we can do locally.
+    const engineError = attendanceEngineError(form);
+    if (engineError) {
+      setError(engineError);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -133,6 +158,8 @@ export function ClassWizardPage() {
         teacher_name: form.teacherName || undefined,
         location: form.location || undefined,
         age_range: form.ageMin ? { min: parseInt(form.ageMin), max: form.ageMax ? parseInt(form.ageMax) : undefined } : undefined,
+        attendanceEngineEnabled: form.attendanceEngineEnabled,
+        attendanceStartDate: form.attendanceStartDate || undefined,
       };
 
       if (isEdit && id) {
@@ -275,6 +302,7 @@ function StepDetalhes({
   form, update, next, back,
 }: { form: ClassForm; update: (f: Partial<ClassForm>) => void; next: () => void; back: () => void }) {
   function handleSubmit(e: FormEvent) { e.preventDefault(); next(); }
+  const engineError = attendanceEngineError(form);
 
   return (
     <form onSubmit={handleSubmit}>
@@ -299,10 +327,42 @@ function StepDetalhes({
             <input className="form-input" type="number" min={0} placeholder="Ex: 17" value={form.ageMax} onChange={(e) => update({ ageMax: e.target.value })} />
           </div>
         </div>
+        <div className="form-group">
+          <label>Motor de frequência</label>
+          <div className="attendance-engine-row">
+            <label className="donation-toggle">
+              <input
+                type="checkbox"
+                checked={form.attendanceEngineEnabled}
+                onChange={(e) => update({ attendanceEngineEnabled: e.target.checked })}
+              />
+              <span className="donation-toggle-mark" />
+            </label>
+            <span className={`attendance-engine-status ${form.attendanceEngineEnabled ? "on" : ""}`}>
+              {form.attendanceEngineEnabled ? "LIGADO" : "DESLIGADO"}
+            </span>
+          </div>
+          <small className="form-hint">
+            Quando ligado, os alunos fazem check-in e a frequência desta turma passa a ser contabilizada.
+          </small>
+        </div>
+        {form.attendanceEngineEnabled && (
+          <div className="form-group">
+            <label>Data-base da contagem *</label>
+            <input
+              className="form-input"
+              type="date"
+              value={form.attendanceStartDate}
+              onChange={(e) => update({ attendanceStartDate: e.target.value })}
+            />
+            <small className="form-hint">Presenças e faltas só contam a partir desta data.</small>
+            {engineError && <span className="field-error">{engineError}</span>}
+          </div>
+        )}
       </div>
       <div className="wizard-actions">
         <button type="button" className="btn btn-outline btn-sm" onClick={back}>Voltar</button>
-        <button type="submit" className="btn btn-primary btn-sm">Próximo</button>
+        <button type="submit" className="btn btn-primary btn-sm" disabled={!!engineError}>Próximo</button>
       </div>
     </form>
   );
@@ -329,6 +389,14 @@ function StepConfirmacao({
         <ReviewRow label="Horário" value={`${form.startTime}–${form.endTime}`} />
         {form.teacherName && <ReviewRow label="Professor" value={form.teacherName} />}
         {form.ageMin && <ReviewRow label="Faixa etária" value={`${form.ageMin}–${form.ageMax || "∞"} anos`} />}
+        <ReviewRow
+          label="Motor de frequência"
+          value={
+            form.attendanceEngineEnabled
+              ? `Ligado — desde ${form.attendanceStartDate ? formatIsoDateBR(form.attendanceStartDate) : "—"}`
+              : "Desligado"
+          }
+        />
       </div>
       {error && <div className="login-error" style={{ marginTop: "1rem" }}>{error}</div>}
       <div className="wizard-actions">

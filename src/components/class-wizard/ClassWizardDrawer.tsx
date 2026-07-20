@@ -44,6 +44,8 @@ interface ClassForm {
   teacherName: string;
   location: string;
   totalSlots: string;
+  attendanceEngineEnabled: boolean;
+  attendanceStartDate: string; // ISO YYYY-MM-DD, "" when unset
 }
 
 const INITIAL: ClassForm = {
@@ -56,6 +58,8 @@ const INITIAL: ClassForm = {
   teacherName: "",
   location: "",
   totalSlots: "",
+  attendanceEngineEnabled: false,
+  attendanceStartDate: "",
 };
 
 interface ClassPayload {
@@ -65,6 +69,20 @@ interface ClassPayload {
   schedule: { day: string; start_time: string; end_time: string }[];
   teacher_name?: string;
   location?: string;
+  attendanceEngineEnabled?: boolean;
+  attendanceStartDate?: string;
+}
+
+function attendanceEngineError(form: ClassForm): string | null {
+  if (form.attendanceEngineEnabled && !form.attendanceStartDate) {
+    return "Informe a data-base para ativar o motor de frequência.";
+  }
+  return null;
+}
+
+function formatIsoDateBR(iso: string): string {
+  const [y, m, d] = iso.split("-");
+  return y && m && d ? `${d}/${m}/${y}` : iso;
 }
 
 interface ClassWizardDrawerProps {
@@ -138,6 +156,8 @@ export function ClassWizardDrawer({
         teacherName: editing.teacher ?? "",
         location: editing.location ?? "",
         totalSlots: "",
+        attendanceEngineEnabled: editing.attendanceEngineEnabled ?? false,
+        attendanceStartDate: editing.attendanceStartDate ?? "",
       });
     } else {
       setForm(INITIAL);
@@ -167,6 +187,13 @@ export function ClassWizardDrawer({
   }
 
   async function handleSubmit() {
+    // Fail fast client-side — the server also enforces this (422) but there's
+    // no reason to round-trip for a check we can do locally.
+    const engineError = attendanceEngineError(form);
+    if (engineError) {
+      setError(engineError);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -181,6 +208,8 @@ export function ClassWizardDrawer({
         })),
         teacher_name: form.teacherName || undefined,
         location: form.location || undefined,
+        attendanceEngineEnabled: form.attendanceEngineEnabled,
+        attendanceStartDate: form.attendanceStartDate || undefined,
       };
       if (editing) {
         await onUpdate(editing.id, payload);
@@ -341,6 +370,7 @@ function canAdvance(step: number, form: ClassForm): boolean {
     return form.name.trim().length >= 3 && form.modalityId !== "";
   if (step === 1)
     return form.days.length > 0 && form.startTime !== "" && form.endTime !== "";
+  if (step === 2) return attendanceEngineError(form) === null;
   return true;
 }
 
@@ -516,6 +546,49 @@ function StepDetalhes({
           onChange={(e) => update({ location: e.target.value })}
         />
       </div>
+
+      <div className="form-group">
+        <label>MOTOR DE FREQUÊNCIA</label>
+        <div className="attendance-engine-row">
+          <label className="donation-toggle">
+            <input
+              type="checkbox"
+              checked={form.attendanceEngineEnabled}
+              onChange={(e) =>
+                update({ attendanceEngineEnabled: e.target.checked })
+              }
+            />
+            <span className="donation-toggle-mark" />
+          </label>
+          <span
+            className={`attendance-engine-status ${form.attendanceEngineEnabled ? "on" : ""}`}
+          >
+            {form.attendanceEngineEnabled ? "LIGADO" : "DESLIGADO"}
+          </span>
+        </div>
+        <small className="form-hint">
+          Quando ligado, os alunos fazem check-in e a frequência desta turma
+          passa a ser contabilizada.
+        </small>
+      </div>
+
+      {form.attendanceEngineEnabled && (
+        <div className="form-group">
+          <label>DATA-BASE DA CONTAGEM *</label>
+          <input
+            className="form-input"
+            type="date"
+            value={form.attendanceStartDate}
+            onChange={(e) => update({ attendanceStartDate: e.target.value })}
+          />
+          <small className="form-hint">
+            Presenças e faltas só contam a partir desta data.
+          </small>
+          {attendanceEngineError(form) && (
+            <span className="field-error">{attendanceEngineError(form)}</span>
+          )}
+        </div>
+      )}
     </form>
   );
 }
@@ -621,6 +694,14 @@ function StepConfirmacao({
             <span className="confirm-detail-value">{form.location}</span>
           </div>
         )}
+        <div className="confirm-detail-row">
+          <span className="confirm-detail-label">Motor de frequência</span>
+          <span className="confirm-detail-value">
+            {form.attendanceEngineEnabled
+              ? `Ligado — desde ${form.attendanceStartDate ? formatIsoDateBR(form.attendanceStartDate) : "—"}`
+              : "Desligado"}
+          </span>
+        </div>
       </div>
 
       {error && (
