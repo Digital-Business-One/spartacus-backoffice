@@ -5,7 +5,13 @@ import { api } from "../lib/api";
 import { DatePicker } from "../components/DatePicker";
 import { ClassWizardDrawer } from "../components/class-wizard/ClassWizardDrawer";
 
-type SettingsTab = "cadastro" | "faixas" | "modalidades" | "turmas" | "apoio";
+type SettingsTab =
+  | "cadastro"
+  | "faixas"
+  | "modalidades"
+  | "turmas"
+  | "apoio"
+  | "justificativas";
 
 // ── Icons (Feather-style, stroke-only) ──────────────────────────────────────
 
@@ -154,6 +160,7 @@ const TABS: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
   { id: "modalidades", label: "Modalidades", icon: I.tag },
   { id: "turmas", label: "Turmas", icon: I.award },
   { id: "apoio", label: "Apoio", icon: I.gift },
+  { id: "justificativas", label: "Justificativas", icon: I.fileText },
 ];
 
 // ── Domain types ────────────────────────────────────────────────────────────
@@ -263,6 +270,7 @@ export function ProjectSettingsPage() {
         )}
         {activeTab === "modalidades" && <ModalidadesTab />}
         {activeTab === "apoio" && <ApoioTab />}
+        {activeTab === "justificativas" && <JustificationTypesTab />}
       </div>
 
       <ClassWizardDrawer
@@ -792,6 +800,11 @@ const MODALITY_COLORS: Record<string, string> = {
   mma: "#EF4444",
 };
 
+function formatIsoDateBR(iso: string): string {
+  const [y, m, d] = iso.split("-");
+  return y && m && d ? `${d}/${m}/${y}` : iso;
+}
+
 function modalityColor(modalityId?: string, modalityName?: string): string {
   if (modalityId && MODALITY_COLORS[modalityId.toLowerCase()]) {
     return MODALITY_COLORS[modalityId.toLowerCase()];
@@ -921,6 +934,20 @@ function TurmasTab({
           <span className="turma-card-modality" style={{ color }}>
             {cls.modality_name?.toUpperCase()}
             {inactive && <span className="turma-inactive-badge">INATIVA</span>}
+            {cls.attendanceEngineEnabled && (
+              cls.attendanceStartDate ? (
+                <span className="turma-engine-badge turma-engine-badge--on">
+                  MOTOR LIGADO
+                </span>
+              ) : (
+                <span
+                  className="turma-engine-badge turma-engine-badge--error"
+                  title="Motor ligado sem data-base — tratado como desligado até corrigir"
+                >
+                  MOTOR SEM DATA
+                </span>
+              )
+            )}
           </span>
           <div className="turma-card-actions">
             {inactive && (
@@ -986,6 +1013,11 @@ function TurmasTab({
           )}
           {cls.teacher && (
             <span className="turma-meta-item">🎓 {cls.teacher}</span>
+          )}
+          {cls.attendanceEngineEnabled && cls.attendanceStartDate && (
+            <span className="turma-meta-item">
+              ⚙️ Motor desde {formatIsoDateBR(cls.attendanceStartDate)}
+            </span>
           )}
         </div>
         <div
@@ -1250,6 +1282,353 @@ function ModalidadesTab() {
           Adicionar
         </button>
       </div>
+    </div>
+  );
+}
+
+/* ── Justificativas Tab ───────────────────────────────────────────────────── */
+
+interface JustificationTypeData {
+  projectId: string;
+  slug: string;
+  name: string;
+  allowsAttachment: boolean;
+  requiresAttachment: boolean;
+  active: boolean;
+  order: number;
+}
+
+interface JustificationTypeDraft {
+  name: string;
+  order: number;
+  allowsAttachment: boolean;
+  requiresAttachment: boolean;
+  active: boolean;
+}
+
+function emptyJustificationDraft(): JustificationTypeDraft {
+  return {
+    name: "",
+    order: 0,
+    allowsAttachment: false,
+    requiresAttachment: false,
+    active: true,
+  };
+}
+
+function JustificationTypesTab() {
+  const [types, setTypes] = useState<JustificationTypeData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [editingSlug, setEditingSlug] = useState<string | null>(null);
+  const [draft, setDraft] = useState<JustificationTypeDraft>(
+    emptyJustificationDraft(),
+  );
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const fetchTypes = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await api.get<{ types: JustificationTypeData[] }>(
+        `/projects/${PROJECT_ID}/justification-types`,
+      );
+      setTypes(
+        (data.types ?? []).slice().sort((a, b) => a.order - b.order),
+      );
+    } catch {
+      setTypes([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTypes();
+  }, [fetchTypes]);
+
+  function startAdd() {
+    setDraft(emptyJustificationDraft());
+    setFormError(null);
+    setEditingSlug(null);
+    setAddOpen(true);
+  }
+
+  function startEdit(t: JustificationTypeData) {
+    setDraft({
+      name: t.name,
+      order: t.order,
+      allowsAttachment: t.allowsAttachment,
+      requiresAttachment: t.requiresAttachment,
+      active: t.active,
+    });
+    setFormError(null);
+    setEditingSlug(t.slug);
+    setAddOpen(false);
+  }
+
+  function cancelForm() {
+    setAddOpen(false);
+    setEditingSlug(null);
+    setFormError(null);
+    setDraft(emptyJustificationDraft());
+  }
+
+  async function saveDraft() {
+    const name = draft.name.trim();
+    if (!name) {
+      setFormError("Informe um nome.");
+      return;
+    }
+    if (draft.requiresAttachment && !draft.allowsAttachment) {
+      setFormError(
+        "Para exigir anexo, é preciso também permitir anexo.",
+      );
+      return;
+    }
+    const slug = editingSlug ?? slugify(name);
+    if (!editingSlug && types.some((t) => t.slug === slug)) {
+      setFormError("Já existe um tipo com esse nome.");
+      return;
+    }
+    setFormError(null);
+    setBusy(true);
+    try {
+      await api.put(`/projects/${PROJECT_ID}/justification-types/${slug}`, {
+        name,
+        allowsAttachment: draft.allowsAttachment,
+        requiresAttachment: draft.requiresAttachment,
+        active: draft.active,
+        order: draft.order,
+      });
+      cancelForm();
+      await fetchTypes();
+    } catch (err) {
+      setFormError(
+        err instanceof Error ? err.message : "Erro ao salvar.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deactivate(t: JustificationTypeData) {
+    if (!window.confirm(`Desativar o tipo de justificativa "${t.name}"?`))
+      return;
+    setBusy(true);
+    try {
+      await api.delete(`/projects/${PROJECT_ID}/justification-types/${t.slug}`);
+      await fetchTypes();
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Erro ao desativar.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function reactivate(t: JustificationTypeData) {
+    setBusy(true);
+    try {
+      await api.put(`/projects/${PROJECT_ID}/justification-types/${t.slug}`, {
+        name: t.name,
+        allowsAttachment: t.allowsAttachment,
+        requiresAttachment: t.requiresAttachment,
+        active: true,
+        order: t.order,
+      });
+      await fetchTypes();
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Erro ao reativar.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="hub-loading-inline">
+        <span className="loading-spinner" />
+        <span>Carregando tipos de justificativa...</span>
+      </div>
+    );
+  }
+
+  const showForm = addOpen || editingSlug !== null;
+
+  return (
+    <div className="settings-card">
+      <h3 className="settings-card-title">Tipos de justificativa</h3>
+      <p className="settings-card-desc">
+        Motivos que alunos e responsáveis podem escolher ao justificar uma
+        falta. Desative para ocultar do app sem excluir — justificativas já
+        registradas mantêm o nome do tipo.
+      </p>
+
+      <div className="modality-list">
+        {types.map((t) => (
+          <div
+            key={t.slug}
+            className={`modality-row ${t.active ? "" : "donation-row--inactive"}`}
+          >
+            <span className="justification-order" title="Ordem de exibição">
+              {t.order}
+            </span>
+            <span className="modality-name">{t.name}</span>
+            <div className="justification-badges">
+              {t.allowsAttachment && (
+                <span className="status-badge status-badge--gold">
+                  permite anexo
+                </span>
+              )}
+              {t.requiresAttachment && (
+                <span className="status-badge status-badge--warning">
+                  exige anexo
+                </span>
+              )}
+              <span
+                className={`status-badge ${t.active ? "status-badge--success" : "status-badge--muted"}`}
+              >
+                {t.active ? "ativo" : "inativo"}
+              </span>
+            </div>
+            <button
+              className="btn btn-sm btn-outline"
+              onClick={() => startEdit(t)}
+            >
+              Editar
+            </button>
+            {t.active ? (
+              <button
+                className="btn btn-sm detail-btn--danger"
+                disabled={busy}
+                onClick={() => deactivate(t)}
+              >
+                Desativar
+              </button>
+            ) : (
+              <button
+                className="btn btn-sm btn-outline"
+                disabled={busy}
+                onClick={() => reactivate(t)}
+              >
+                Reativar
+              </button>
+            )}
+          </div>
+        ))}
+        {types.length === 0 && (
+          <p className="modality-empty">
+            Nenhum tipo de justificativa cadastrado.
+          </p>
+        )}
+      </div>
+
+      {showForm ? (
+        <div className="age-range-editor">
+          <div className="age-range-editor-title">
+            {editingSlug ? "EDITAR TIPO" : "NOVO TIPO"}
+          </div>
+          <div className="age-range-editor-row">
+            <div className="form-group" style={{ flex: 2 }}>
+              <label>Nome</label>
+              <input
+                className="form-input"
+                placeholder="Ex: Atestado médico"
+                value={draft.name}
+                autoFocus
+                onChange={(e) =>
+                  setDraft({ ...draft, name: e.target.value })
+                }
+              />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Ordem</label>
+              <input
+                className="form-input"
+                type="number"
+                min={0}
+                value={draft.order}
+                onChange={(e) =>
+                  setDraft({
+                    ...draft,
+                    order: Math.max(0, parseInt(e.target.value) || 0),
+                  })
+                }
+              />
+            </div>
+          </div>
+
+          <div className="donation-row" style={{ marginTop: "0.75rem" }}>
+            <label className="donation-toggle">
+              <input
+                type="checkbox"
+                checked={draft.allowsAttachment}
+                onChange={(e) => {
+                  const allows = e.target.checked;
+                  setDraft((d) => ({
+                    ...d,
+                    allowsAttachment: allows,
+                    // Turning off "allows" implies "requires" no longer makes sense.
+                    requiresAttachment: allows ? d.requiresAttachment : false,
+                  }));
+                }}
+              />
+              <span className="donation-toggle-mark" />
+            </label>
+            <span>Permite anexar comprovante</span>
+          </div>
+          <div className="donation-row">
+            <label className="donation-toggle">
+              <input
+                type="checkbox"
+                checked={draft.requiresAttachment}
+                onChange={(e) =>
+                  setDraft({ ...draft, requiresAttachment: e.target.checked })
+                }
+              />
+              <span className="donation-toggle-mark" />
+            </label>
+            <span>Exige comprovante</span>
+          </div>
+          <div className="donation-row">
+            <label className="donation-toggle">
+              <input
+                type="checkbox"
+                checked={draft.active}
+                onChange={(e) =>
+                  setDraft({ ...draft, active: e.target.checked })
+                }
+              />
+              <span className="donation-toggle-mark" />
+            </label>
+            <span>Ativo</span>
+          </div>
+
+          {formError && <p className="field-error">{formError}</p>}
+
+          <div className="age-range-editor-actions">
+            <button
+              className="btn btn-outline btn-sm"
+              onClick={cancelForm}
+              disabled={busy}
+            >
+              Cancelar
+            </button>
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={saveDraft}
+              disabled={busy}
+            >
+              {busy ? "Salvando..." : editingSlug ? "Salvar" : "Adicionar"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button className="settings-add-btn" onClick={startAdd}>
+          {I.plus}
+          <span>Adicionar tipo de justificativa</span>
+        </button>
+      )}
     </div>
   );
 }

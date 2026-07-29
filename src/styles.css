@@ -4577,6 +4577,24 @@ input, select, button, textarea {
 }
 .modality-input:focus { outline: none; border-color: var(--gold); }
 
+.justification-order {
+  font-family: monospace;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.1rem 0.4rem;
+  border-radius: 5px;
+  min-width: 1.4em;
+  text-align: center;
+}
+.justification-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-right: auto;
+  flex-wrap: wrap;
+}
+
 /* ════════════════════════════════════════════════════════════════════════
    Dashboard de Graduações — "A jornada da faixa"
    ════════════════════════════════════════════════════════════════════════ */
@@ -6135,6 +6153,46 @@ select.mod-modal-textarea option {
   margin-top: 0.4rem;
   color: var(--text-muted);
   font-size: 0.75rem;
+}
+
+/* ── Attendance engine toggle (ClassWizard) ─────────────────────────────── */
+
+.attendance-engine-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.attendance-engine-status {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.attendance-engine-status.on {
+  color: var(--success);
+}
+
+.turma-engine-badge {
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+
+.turma-engine-badge--on {
+  background: rgba(76, 175, 80, 0.15);
+  color: var(--success);
+}
+
+.turma-engine-badge--error {
+  background: rgba(231, 76, 76, 0.15);
+  color: var(--error);
 }
 
 .settings-panel-title {

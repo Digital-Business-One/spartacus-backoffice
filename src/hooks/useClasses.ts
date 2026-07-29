@@ -17,6 +17,10 @@ export interface ClassData {
   icon_url?: string;
   active?: boolean;
   student_count?: number;
+  // Attendance engine (Frequência Analítica) — camelCase in the JSON payload,
+  // matching the backend's explicit aliases (see app/models/classes.py).
+  attendanceEngineEnabled?: boolean;
+  attendanceStartDate?: string | null;
 }
 
 export function useClasses() {
@@ -53,6 +57,8 @@ export function useClasses() {
     teacher_name?: string;
     location?: string;
     age_range?: { min: number; max?: number };
+    attendanceEngineEnabled?: boolean;
+    attendanceStartDate?: string;
   }) => {
     const result = await api.post<ClassData>(`/projects/${PROJECT_ID}/classes`, data);
     await fetchClasses();
