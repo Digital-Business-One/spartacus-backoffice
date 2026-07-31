@@ -1167,6 +1167,17 @@ function ClassEngineInlineForm({
       : null;
   const turningOff = savedEnabled && !enabled;
 
+  // Esc has to be caught on the document: right after opening, focus is still
+  // on the badge button, which is a sibling of this form — a handler on the
+  // wrapper div would only see keys pressed inside it.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   function buildPayload(): Record<string, unknown> {
     const payload: Record<string, unknown> = {};
     if (enabled !== savedEnabled) payload.attendanceEngineEnabled = enabled;
@@ -1199,16 +1210,7 @@ function ClassEngineInlineForm({
   }
 
   return (
-    <div
-      className="turma-engine-form"
-      onClick={(e) => e.stopPropagation()}
-      onKeyDown={(e) => {
-        if (e.key === "Escape") {
-          e.stopPropagation();
-          onClose();
-        }
-      }}
-    >
+    <div className="turma-engine-form" onClick={(e) => e.stopPropagation()}>
       <div className="turma-engine-form-row">
         <span className="turma-engine-form-label">Motor de frequência</span>
         <label className="donation-toggle">
