@@ -53,7 +53,7 @@ const INITIAL: ClassForm = {
 
 function attendanceEngineError(form: ClassForm): string | null {
   if (form.attendanceEngineEnabled && !form.attendanceStartDate) {
-    return "Informe a data-base para ativar o motor de frequência.";
+    return "Informe a data-base para ativar a frequência.";
   }
   return null;
 }
@@ -328,7 +328,7 @@ function StepDetalhes({
           </div>
         </div>
         <div className="form-group">
-          <label>Motor de frequência</label>
+          <label>Frequência</label>
           <div className="attendance-engine-row">
             <label className="donation-toggle">
               <input
@@ -339,11 +339,11 @@ function StepDetalhes({
               <span className="donation-toggle-mark" />
             </label>
             <span className={`attendance-engine-status ${form.attendanceEngineEnabled ? "on" : ""}`}>
-              {form.attendanceEngineEnabled ? "LIGADO" : "DESLIGADO"}
+              {form.attendanceEngineEnabled ? "LIGADA" : "DESLIGADA"}
             </span>
           </div>
           <small className="form-hint">
-            Quando ligado, os alunos fazem check-in e a frequência desta turma passa a ser contabilizada.
+            Quando ligada, os alunos fazem check-in e a frequência desta turma passa a ser contabilizada.
           </small>
         </div>
         {form.attendanceEngineEnabled && (
@@ -390,11 +390,11 @@ function StepConfirmacao({
         {form.teacherName && <ReviewRow label="Professor" value={form.teacherName} />}
         {form.ageMin && <ReviewRow label="Faixa etária" value={`${form.ageMin}–${form.ageMax || "∞"} anos`} />}
         <ReviewRow
-          label="Motor de frequência"
+          label="Frequência"
           value={
             form.attendanceEngineEnabled
-              ? `Ligado — desde ${form.attendanceStartDate ? formatIsoDateBR(form.attendanceStartDate) : "—"}`
-              : "Desligado"
+              ? `Ligada — desde ${form.attendanceStartDate ? formatIsoDateBR(form.attendanceStartDate) : "—"}`
+              : "Desligada"
           }
         />
       </div>
