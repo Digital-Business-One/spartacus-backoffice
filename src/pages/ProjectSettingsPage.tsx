@@ -894,17 +894,17 @@ function TurmasTab({
     const engineOn = cls.attendanceEngineEnabled ?? false;
     const engineBroken = engineOn && !cls.attendanceStartDate;
     const engineBadgeLabel = engineBroken
-      ? "MOTOR SEM DATA"
+      ? "FREQUÊNCIA SEM DATA"
       : engineOn
-        ? "MOTOR LIGADO"
-        : "MOTOR DESLIGADO";
+        ? "FREQUÊNCIA LIGADA"
+        : "FREQUÊNCIA DESLIGADA";
     const engineBadgeClass = engineBroken
       ? "turma-engine-badge--error"
       : engineOn
         ? "turma-engine-badge--on"
         : "turma-engine-badge--off";
     const engineBadgeTitle = engineBroken
-      ? "Motor ligado sem data-base — tratado como desligado até corrigir"
+      ? "Frequência ligada sem data-base — tratada como desligada até corrigir"
       : undefined;
 
     if (isConfirming) {
@@ -975,7 +975,7 @@ function TurmasTab({
               <button
                 type="button"
                 className={`turma-engine-badge ${engineBadgeClass} turma-engine-badge--btn`}
-                title={engineBadgeTitle ?? "Ajustar o motor de frequência"}
+                title={engineBadgeTitle ?? "Ajustar a frequência"}
                 aria-expanded={isEngineEditing}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -1061,7 +1061,7 @@ function TurmasTab({
           )}
           {cls.attendanceEngineEnabled && cls.attendanceStartDate && (
             <span className="turma-meta-item">
-              ⚙️ Motor desde {formatIsoDateBR(cls.attendanceStartDate)}
+              ⚙️ Frequência desde {formatIsoDateBR(cls.attendanceStartDate)}
             </span>
           )}
         </div>
@@ -1138,7 +1138,7 @@ function TurmasTab({
   );
 }
 
-/* ── Motor de frequência inline (card da turma) ───────────────────────────── */
+/* ── Frequência inline (card da turma) ────────────────────────────────────── */
 
 function ClassEngineInlineForm({
   cls,
@@ -1163,7 +1163,7 @@ function ClassEngineInlineForm({
   // Mirrors the 422 the backend raises for the same invariant.
   const validationError =
     enabled && !startDate
-      ? "Informe a data-base para ativar o motor de frequência."
+      ? "Informe a data-base para ativar a frequência."
       : null;
   const turningOff = savedEnabled && !enabled;
 
@@ -1212,7 +1212,7 @@ function ClassEngineInlineForm({
   return (
     <div className="turma-engine-form" onClick={(e) => e.stopPropagation()}>
       <div className="turma-engine-form-row">
-        <span className="turma-engine-form-label">Motor de frequência</span>
+        <span className="turma-engine-form-label">Frequência</span>
         <label className="donation-toggle">
           <input
             type="checkbox"
@@ -1246,8 +1246,8 @@ function ClassEngineInlineForm({
 
       {turningOff && (
         <div className="turma-engine-form-warning">
-          Sem o motor, o check-in fica bloqueado nesta turma e as faltas param de
-          ser geradas.
+          Sem a frequência ligada, o check-in fica bloqueado nesta turma e as
+          faltas param de ser geradas.
         </div>
       )}
       {validationError && (
