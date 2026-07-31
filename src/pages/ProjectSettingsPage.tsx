@@ -266,6 +266,7 @@ export function ProjectSettingsPage() {
             }
             onDeleteOrDeactivate={deactivateClass}
             onReactivateClass={reactivateClass}
+            onUpdateClass={updateClass}
           />
         )}
         {activeTab === "modalidades" && <ModalidadesTab />}
@@ -805,6 +806,15 @@ function formatIsoDateBR(iso: string): string {
   return y && m && d ? `${d}/${m}/${y}` : iso;
 }
 
+// Local calendar day as yyyy-mm-dd. toISOString() would shift to UTC and give
+// the wrong day for the whole evening in UTC-4.
+function todayIso(): string {
+  const now = new Date();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${m}-${d}`;
+}
+
 function modalityColor(modalityId?: string, modalityName?: string): string {
   if (modalityId && MODALITY_COLORS[modalityId.toLowerCase()]) {
     return MODALITY_COLORS[modalityId.toLowerCase()];
@@ -834,6 +844,7 @@ function TurmasTab({
   onEditClass,
   onDeleteOrDeactivate,
   onReactivateClass,
+  onUpdateClass,
 }: {
   classes: ClassData[];
   loading: boolean;
@@ -842,11 +853,14 @@ function TurmasTab({
   onDeactivateClass: (id: string) => Promise<void>;
   onDeleteOrDeactivate: (id: string) => Promise<"deleted" | "deactivated">;
   onReactivateClass: (id: string) => Promise<void>;
+  onUpdateClass: (id: string, data: Record<string, unknown>) => Promise<unknown>;
 }) {
   const [modalityFilter, setModalityFilter] = useState<string>("all");
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [reactivatingId, setReactivatingId] = useState<string | null>(null);
+  // Only one engine mini-form open at a time (same idiom as confirmingId).
+  const [engineEditingId, setEngineEditingId] = useState<string | null>(null);
 
   const modalityOptions = Array.from(
     new Set(classes.map((c) => c.modality_name).filter(Boolean)),
@@ -873,6 +887,25 @@ function TurmasTab({
     const isRemoving = removingId === cls.id;
     const studentCount = cls.student_count ?? 0;
     const willDeactivate = studentCount > 0;
+    const isEngineEditing = engineEditingId === cls.id;
+
+    // Badge is always rendered now — "desligado" is the state that most needs a
+    // way in, since it is what blocks check-in.
+    const engineOn = cls.attendanceEngineEnabled ?? false;
+    const engineBroken = engineOn && !cls.attendanceStartDate;
+    const engineBadgeLabel = engineBroken
+      ? "MOTOR SEM DATA"
+      : engineOn
+        ? "MOTOR LIGADO"
+        : "MOTOR DESLIGADO";
+    const engineBadgeClass = engineBroken
+      ? "turma-engine-badge--error"
+      : engineOn
+        ? "turma-engine-badge--on"
+        : "turma-engine-badge--off";
+    const engineBadgeTitle = engineBroken
+      ? "Motor ligado sem data-base — tratado como desligado até corrigir"
+      : undefined;
 
     if (isConfirming) {
       return (
@@ -934,19 +967,23 @@ function TurmasTab({
           <span className="turma-card-modality" style={{ color }}>
             {cls.modality_name?.toUpperCase()}
             {inactive && <span className="turma-inactive-badge">INATIVA</span>}
-            {cls.attendanceEngineEnabled && (
-              cls.attendanceStartDate ? (
-                <span className="turma-engine-badge turma-engine-badge--on">
-                  MOTOR LIGADO
-                </span>
-              ) : (
-                <span
-                  className="turma-engine-badge turma-engine-badge--error"
-                  title="Motor ligado sem data-base — tratado como desligado até corrigir"
-                >
-                  MOTOR SEM DATA
-                </span>
-              )
+            {inactive ? (
+              <span className={`turma-engine-badge ${engineBadgeClass}`} title={engineBadgeTitle}>
+                {engineBadgeLabel}
+              </span>
+            ) : (
+              <button
+                type="button"
+                className={`turma-engine-badge ${engineBadgeClass} turma-engine-badge--btn`}
+                title={engineBadgeTitle ?? "Ajustar o motor de frequência"}
+                aria-expanded={isEngineEditing}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEngineEditingId(isEngineEditing ? null : cls.id);
+                }}
+              >
+                {engineBadgeLabel} ▾
+              </button>
             )}
           </span>
           <div className="turma-card-actions">
@@ -991,6 +1028,14 @@ function TurmasTab({
           </div>
         </div>
         <div className="turma-card-name">{cls.name}</div>
+        {isEngineEditing && !inactive && (
+          <ClassEngineInlineForm
+            key={cls.id}
+            cls={cls}
+            onSave={(data) => onUpdateClass(cls.id, data)}
+            onClose={() => setEngineEditingId(null)}
+          />
+        )}
         <div className="turma-card-days">
           {DAYS.map((d) => (
             <span
@@ -1089,6 +1134,143 @@ function TurmasTab({
           )}
         </>
       )}
+    </div>
+  );
+}
+
+/* ── Motor de frequência inline (card da turma) ───────────────────────────── */
+
+function ClassEngineInlineForm({
+  cls,
+  onSave,
+  onClose,
+}: {
+  cls: ClassData;
+  onSave: (data: Record<string, unknown>) => Promise<unknown>;
+  onClose: () => void;
+}) {
+  const savedEnabled = cls.attendanceEngineEnabled ?? false;
+  const savedDate = cls.attendanceStartDate ?? "";
+
+  const [enabled, setEnabled] = useState(savedEnabled);
+  const [startDate, setStartDate] = useState(savedDate || todayIso());
+  // Turning the engine off must not persist the prefilled date, so the date is
+  // only sent when it is actually relevant or the user touched it.
+  const [dateTouched, setDateTouched] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Mirrors the 422 the backend raises for the same invariant.
+  const validationError =
+    enabled && !startDate
+      ? "Informe a data-base para ativar o motor de frequência."
+      : null;
+  const turningOff = savedEnabled && !enabled;
+
+  function buildPayload(): Record<string, unknown> {
+    const payload: Record<string, unknown> = {};
+    if (enabled !== savedEnabled) payload.attendanceEngineEnabled = enabled;
+    if ((enabled || dateTouched) && startDate !== savedDate) {
+      payload.attendanceStartDate = startDate;
+    }
+    return payload;
+  }
+
+  async function save() {
+    if (validationError || saving) return;
+    const payload = buildPayload();
+    if (Object.keys(payload).length === 0) {
+      onClose();
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      await onSave(payload);
+      onClose();
+    } catch (e) {
+      setError(
+        e instanceof Error && e.message
+          ? e.message
+          : "Não foi possível salvar. Tente de novo.",
+      );
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div
+      className="turma-engine-form"
+      onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          e.stopPropagation();
+          onClose();
+        }
+      }}
+    >
+      <div className="turma-engine-form-row">
+        <span className="turma-engine-form-label">Motor de frequência</span>
+        <label className="donation-toggle">
+          <input
+            type="checkbox"
+            checked={enabled}
+            disabled={saving}
+            onChange={(e) => setEnabled(e.target.checked)}
+          />
+          <span className="donation-toggle-mark" />
+        </label>
+      </div>
+
+      <div className="turma-engine-form-row">
+        <span className="turma-engine-form-label">Contar desde</span>
+        <input
+          className="form-input turma-engine-form-date"
+          type="date"
+          value={startDate}
+          disabled={saving}
+          onChange={(e) => {
+            setDateTouched(true);
+            setStartDate(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              save();
+            }
+          }}
+        />
+      </div>
+
+      {turningOff && (
+        <div className="turma-engine-form-warning">
+          Sem o motor, o check-in fica bloqueado nesta turma e as faltas param de
+          ser geradas.
+        </div>
+      )}
+      {validationError && (
+        <span className="field-error">{validationError}</span>
+      )}
+      {error && <span className="field-error">{error}</span>}
+
+      <div className="turma-engine-form-actions">
+        <button
+          type="button"
+          className="btn btn-sm btn-outline"
+          onClick={onClose}
+          disabled={saving}
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          className="btn btn-sm btn-primary"
+          onClick={save}
+          disabled={saving || !!validationError}
+        >
+          {saving ? "Salvando…" : "Salvar"}
+        </button>
+      </div>
     </div>
   );
 }

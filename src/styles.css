@@ -6195,6 +6195,81 @@ select.mod-modal-textarea option {
   color: var(--error);
 }
 
+.turma-engine-badge--off {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Badge doubles as the trigger for the inline engine form on active classes. */
+.turma-engine-badge--btn {
+  font-family: inherit;
+  cursor: pointer;
+  border-width: 1px;
+  border-style: solid;
+  border-color: transparent;
+  transition: filter 0.15s, border-color 0.15s;
+}
+.turma-engine-badge--btn.turma-engine-badge--off {
+  border-color: var(--border-subtle);
+}
+.turma-engine-badge--btn:hover {
+  filter: brightness(1.25);
+  border-color: currentColor;
+}
+.turma-engine-badge--btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
+
+/* ── Motor de frequência — mini-form dentro do card ──────────────────────── */
+
+.turma-engine-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: default;
+}
+
+.turma-engine-form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.turma-engine-form-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.turma-engine-form-date {
+  flex: 0 0 auto;
+  width: auto;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+.turma-engine-form-warning {
+  padding: 0.5rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  background: rgba(245, 158, 11, 0.12);
+  color: #F59E0B;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.turma-engine-form-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
 .settings-panel-title {
   font-family: var(--font-heading);
   font-size: 0.9rem;
